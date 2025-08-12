@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="690.0" prefWidth="1190.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.javafx.bakerymanagementsystem.controller.DashboardController">
+   <children>
+      <VBox alignment="TOP_CENTER" layoutY="1.0" prefHeight="566.0" prefWidth="250.0" spacing="10.0" style="-fx-background-color: #a29bfe;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label />
+            <Label alignment="BOTTOM_CENTER" prefHeight="53.0" prefWidth="193.0" text="Bakery" textFill="WHITE">
+               <font>
+                  <Font name="DejaVu Sans Bold" size="24.0" />
+               </font>
+            </Label>
+            <Label />
+            <VBox alignment="CENTER" prefHeight="710.0" prefWidth="250.0" spacing="10.0">
+               <children>
+                  <Label />
+                  <Button fx:id="btnUser" mnemonicParsing="false" onAction="#btnUserOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="User">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnCustomer" mnemonicParsing="false" onAction="#btnCustomerOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Customer">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnOrder" mnemonicParsing="false" onAction="#btnOrderOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Order">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnDelivery" mnemonicParsing="false" onAction="#btnDeliverOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Deliver">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnEmployee" mnemonicParsing="false" onAction="#btnEmployeeOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Employee">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnSupplier" mnemonicParsing="false" onAction="#btnSuppliersOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Suppliers">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnProduct" mnemonicParsing="false" onAction="#btnProductOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Product">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnPayment" mnemonicParsing="false" onAction="#btnPaymentOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Payment">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnInventory" mnemonicParsing="false" onAction="#btnInventoryOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Inventory">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnSalary" mnemonicParsing="false" onAction="#btnSalaryOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Salary">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnIngrediant" mnemonicParsing="false" onAction="#btnIngrediantOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Ingrediant">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnExpenses" mnemonicParsing="false" onAction="#btnExpensesOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Expenses">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Button fx:id="btnAttendance" mnemonicParsing="false" onAction="#btnAttendanceOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #a29bfe; -fx-background-radius: 3; -fx-border-radius: 3;" text="Attendance">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Label />
+                  <Label />
+                  <Button fx:id="btnLogout" mnemonicParsing="false" onAction="#btnLogoutOnAction" prefHeight="45.0" prefWidth="200.0" style="-fx-border-color: #fff; -fx-border-width: 1; -fx-background-color: #da0f0f; -fx-background-radius: 3; -fx-border-radius: 3;" text="Log out" textFill="WHITE">
+                     <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Label />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+      <AnchorPane fx:id="ancMainContainer" layoutX="200.0" layoutY="6.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: #dfe6e9;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+   </children>
+</AnchorPane>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="ancLogin" prefHeight="642.0" prefWidth="996.0" style="-fx-background-color: #fab1a0;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lk.ijse.javafx.bakerymanagementsystem.controller.LoginController">
+   <children>
+      <ImageView fitHeight="656.0" fitWidth="656.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <image>
+            <Image url="@../image/5fcee740-7387-4be3-969a-baf353bfce29.jpeg" />
+         </image>
+      </ImageView>
+      <VBox alignment="CENTER" layoutX="328.0" layoutY="6.0" prefHeight="638.0" prefWidth="339.0" spacing="10.0" style="-fx-background-color: black;" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label alignment="CENTER" prefHeight="38.0" prefWidth="216.0" text="Login " textFill="WHITE">
+               <font>
+                  <Font name="System Bold Italic" size="52.0" />
+               </font>
+            </Label>
+            <ImageView fitHeight="109.0" fitWidth="118.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../image/09b6de31-b61a-47e9-9108-25775e14d7ed.jpeg" />
+               </image>
+            </ImageView>
+            <Label alignment="CENTER" prefHeight="38.0" prefWidth="216.0">
+               <font>
+                  <Font name="System Bold" size="52.0" />
+               </font>
+            </Label>
+            <HBox alignment="CENTER" prefHeight="45.0" prefWidth="1500.0">
+               <children>
+                  <TextField fx:id="txtUsername" alignment="CENTER" prefHeight="35.0" prefWidth="278.0" promptText="Username">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </TextField>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="45.0" prefWidth="1500.0">
+               <children>
+                  <PasswordField fx:id="txtPassword" alignment="CENTER" prefHeight="35.0" prefWidth="278.0" promptText="Password" />
+               </children>
+            </HBox>
+            <Label alignment="TOP_CENTER" prefHeight="35.0" prefWidth="278.0" text="forgot password" textFill="#fff8f8">
+               <font>
+                  <Font name="System Bold" size="11.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER" prefHeight="43.0" prefWidth="277.0">
+               <font>
+                  <Font name="System Bold" size="52.0" />
+               </font>
+            </Label>
+            <Button mnemonicParsing="false" onAction="#btnLoginOnAction" prefHeight="27.0" prefWidth="98.0" style="-fx-background-color: white;" text="login">
+               <font>
+                  <Font name="DejaVu Sans Condensed Bold" size="14.0" />
+               </font>
+            </Button>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
