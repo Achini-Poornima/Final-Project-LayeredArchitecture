@@ -5,6 +5,7 @@ module lk.ijse.javafx.bakerymanagementsystem {
     requires static lombok;
     requires org.jetbrains.annotations;
     requires java.mail;
+    requires mysql.connector.j;
 
     opens lk.ijse.javafx.bakerymanagementsystem.controller to javafx.fxml;
     exports lk.ijse.javafx.bakerymanagementsystem;

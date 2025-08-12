@@ -20,11 +20,9 @@ CREATE TABLE Users (
 
 CREATE TABLE Orders (
                         order_id VARCHAR(100) PRIMARY KEY,
-                        total_amount DECIMAL(10,2),
-                        order_date DATETIME,
-                        payment_status VARCHAR(10) NOT NULL,
                         customer_id VARCHAR(100) REFERENCES Customer(customer_id),
-                        deliver_id VARCHAR(100) REFERENCES Deliver(deliver_id)
+                        order_date DATETIME,
+                        payment_status VARCHAR(10) NOT NULL
 );
 
 CREATE TABLE Deliver (

@@ -12,8 +12,20 @@ import java.util.Optional;
 
 public class OrderDAOImpl implements OrderDAO {
     @Override
-    public List<Order> getAll(){
-        return null;
+    public List<Order> getAll() throws SQLException, ClassNotFoundException {
+        List<Order> list = new ArrayList<>();
+
+        ResultSet rs = SQLUtil.execute("SELECT * FROM orders");
+        while (rs.next()) {
+            Order order = new Order(
+                    rs.getString("order_id"),
+                    rs.getString("customer_id"),
+                    rs.getDate("order_date"),
+                    rs.getString("payment_status")
+                    );
+            list.add(order);
+        }
+        return list;
     }
 
     @Override
@@ -26,8 +38,13 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public boolean save(Order order) {
-        return false;
+    public boolean save(Order order) throws SQLException, ClassNotFoundException {
+        return SQLUtil.execute("insert into orders values (?,?,?,?)",
+                order.getOrderId(),
+                order.getCustomerId(),
+                order.getOrderDate(),
+                order.getPaymentStatus()
+        );
     }
 
     @Override
