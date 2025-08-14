@@ -1,6 +1,7 @@
 package lk.ijse.javafx.bakerymanagementsystem.dao.custom;
 
 import lk.ijse.javafx.bakerymanagementsystem.dao.SuperDAO;
+import lk.ijse.javafx.bakerymanagementsystem.entity.CustomOrder;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

@@ -1,5 +1,6 @@
 package lk.ijse.javafx.bakerymanagementsystem.Dto;
 
+import lk.ijse.javafx.bakerymanagementsystem.entity.Attendance;
 import lombok.*;
 
 @Data
