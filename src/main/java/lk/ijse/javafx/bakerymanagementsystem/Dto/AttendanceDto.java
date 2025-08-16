@@ -15,7 +15,6 @@ public class AttendanceDto {
     private String inTime;
     private String outTime;
     private String date;
-
 }
 
 

@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface CustomerDAO extends CrudDAO<Customer> {
     Optional<Customer> findCustomerByNic(String nic) throws SQLException, ClassNotFoundException;
-    boolean existsCustomerByPhoneNumber(String phoneNumber) throws SQLException, ClassNotFoundException;
+    boolean existsCustomerByContactNumber(String contact) throws SQLException, ClassNotFoundException;
 }

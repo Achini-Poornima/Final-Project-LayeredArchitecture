@@ -1,3 +1,4 @@
+/*
 package lk.ijse.javafx.bakerymanagementsystem.controller;
 
 import javafx.collections.FXCollections;
@@ -11,7 +12,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.DeliverDto;
-import lk.ijse.javafx.bakerymanagementsystem.model.DeliverModel;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.DeliverTM;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.DeliverBO;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -22,49 +29,34 @@ import java.util.ResourceBundle;
 
 public class DeliverController implements Initializable {
 
-    @FXML
     public DatePicker txtDeliverDate;
-    @FXML
-    private AnchorPane ancDeliver;
+    public AnchorPane ancDeliver;
 
-    @FXML
-    private TableColumn<DeliverDto,String> colDeliverAddress;
+    public TableColumn<DeliverTM,String> colDeliverAddress;
 
-    @FXML
-    private TableColumn<DeliverDto,Integer> colDeliverCharge;
+    public TableColumn<DeliverTM,Integer> colDeliverCharge;
 
-    @FXML
-    private TableColumn<DeliverDto,String> colDeliverDate;
+    public TableColumn<DeliverTM,String> colDeliverDate;
 
-    @FXML
-    private TableColumn<DeliverDto,String> colOrderId;
+    public TableColumn<DeliverTM,String> colOrderId;
 
-    @FXML
-    private TableColumn<DeliverDto,String> colId;
+    public TableColumn<DeliverTM,String> colId;
 
-    @FXML
-    private Label lblId;
+    public Label lblId;
 
-    @FXML
-    private TableView<DeliverDto> tblDeliver;
+    public TableView<DeliverTM> tblDeliver;
 
-    @FXML
-    private TextField txtDeliverAddress;
+    public TextField txtDeliverAddress;
 
+    public TextField txtDeliverCharge;
 
+    public ComboBox<String> txtOrderId;
 
-    @FXML
-    private TextField txtDeliverCharge;
+    private final DeliverBO deliverBO = BOFactory.getInstance().getBo(BOTypes.DELIVER);
 
-    @FXML
-    private ComboBox<String> txtOrderId;
-
-
-
-    private final DeliverModel deliverModel = new DeliverModel();
     @FXML
     void btnDeleteOnAction(ActionEvent event) {
-        DeliverDto selectedDeliver = tblDeliver.getSelectionModel().getSelectedItem();
+        DeliverTM selectedDeliver = tblDeliver.getSelectionModel().getSelectedItem();
         if (selectedDeliver == null) {
             new Alert(Alert.AlertType.WARNING, "Please select a deliver to delete.").show();
             return;
@@ -77,18 +69,19 @@ public class DeliverController implements Initializable {
         Optional<ButtonType> result = confirmationAlert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                boolean isDeleted = deliverModel.deleteUser(selectedDeliver.getDeliverId());
+                String deliverId = lblId.getText();
+                boolean isDeleted = deliverBO.deleteDeliver(deliverId);
                 if (isDeleted) {
                     new Alert(Alert.AlertType.INFORMATION, "Deliver deleted successfully!").show();
-                    loadTable();
                     resetPage();
-                    loadNextId();
                 } else {
                     new Alert(Alert.AlertType.WARNING, "Failed to delete Deliver!").show();
                 }
-            } catch (SQLException | ClassNotFoundException e) {
+            } catch (InUseException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+            } catch (Exception e) {
                 e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+                new Alert(Alert.AlertType.ERROR, "Fail to delete customer..!").show();
             }
         }
     }
@@ -108,22 +101,15 @@ public class DeliverController implements Initializable {
 
         DeliverDto deliverDto = createDeliverDtoFromInputs();
             try {
-                boolean isAdded = deliverModel.saveDeliver(deliverDto);
-                if (isAdded){
-                    new  Alert(Alert.AlertType.INFORMATION,"Deliver Added Successfully.").show();
-                    loadTable();
-                    resetPage();
-                    loadNextId();
-                }else {
-                    new Alert(Alert.AlertType.WARNING,"Failed save Deliver.").show();
-                }
-            }catch (SQLIntegrityConstraintViolationException e) {
-                new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-            } catch (SQLException e) {
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+                deliverBO.saveDeliver(deliverDto);
+                new  Alert(Alert.AlertType.INFORMATION,"Deliver Added Successfully.").show();
+                resetPage();
+            } catch (DuplicateException e) {
+                System.out.println(e.getMessage());
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
             } catch (Exception e) {
                 e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while adding the user!").show();
+                new Alert(Alert.AlertType.ERROR, "Fail to save Deliver..!").show();
             }
     }
 
@@ -183,26 +169,20 @@ public class DeliverController implements Initializable {
         DeliverDto deliverDto = createDeliverDtoFromInputs();
 
             try {
-                boolean isUpdated = deliverModel.updateDeliver(deliverDto);
-                if (isUpdated) {
-                    new Alert(Alert.AlertType.INFORMATION, "User updated successfully!").show();
-                    loadTable();
+                deliverBO.updateDeliver(deliverDto);
+                new Alert(Alert.AlertType.INFORMATION, "User updated successfully!").show();
                     resetPage();
-                    loadNextId();
-                } else {
-                    new Alert(Alert.AlertType.WARNING, "Failed to update User!").show();
-                }
-            } catch (SQLException e) {
+            } catch (NotFoundException | DuplicateException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+            } catch (Exception e) {
                 e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+                new Alert(Alert.AlertType.ERROR, "Fail to update customer..!").show();
             }
     }
 
     @FXML
     void setData(MouseEvent event) {
-         DeliverDto deliverDto = tblDeliver.getSelectionModel().getSelectedItem();
+         DeliverTM deliverDto = tblDeliver.getSelectionModel().getSelectedItem();
          if (deliverDto != null){
              lblId.setText(deliverDto.getDeliverId());
              txtDeliverAddress.setText(deliverDto.getDeliverAddress());
@@ -213,7 +193,13 @@ public class DeliverController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-          try {
+        colId.setCellValueFactory(new PropertyValueFactory<>("deliverId"));
+        colDeliverAddress.setCellValueFactory(new PropertyValueFactory<>("deliverAddress"));
+        colDeliverCharge.setCellValueFactory(new PropertyValueFactory<>("deliverCharge"));
+        colDeliverDate.setCellValueFactory(new PropertyValueFactory<>("deliverDate"));
+        colOrderId.setCellValueFactory(new PropertyValueFactory<>("orderId"));
+
+        try {
               loadNextId();
               loadTable();
               resetPage();
@@ -226,7 +212,7 @@ public class DeliverController implements Initializable {
 
     private void loadTodayOrderIds() {
         try {
-            ArrayList<String> orderIds = deliverModel.getTodayOrderIds();
+            ArrayList<String> orderIds = new ArrayList<>(deliverBO.getTodayOrderIds());
             ObservableList<String> observableOrderIds = FXCollections.observableArrayList(orderIds);
             txtOrderId.setItems(observableOrderIds);
         } catch (SQLException | ClassNotFoundException e) {
@@ -235,29 +221,23 @@ public class DeliverController implements Initializable {
         }
     }
 
-    private void loadTable() throws SQLException, ClassNotFoundException {
-        colId.setCellValueFactory(new PropertyValueFactory<>("deliverId"));
-        colDeliverAddress.setCellValueFactory(new PropertyValueFactory<>("deliverAddress"));
-        colDeliverCharge.setCellValueFactory(new PropertyValueFactory<>("deliverCharge"));
-        colDeliverDate.setCellValueFactory(new PropertyValueFactory<>("deliverDate"));
-        colOrderId.setCellValueFactory(new PropertyValueFactory<>("orderId"));
 
-        try {
-            ArrayList<DeliverDto> deliver = DeliverModel.getAllDelivers();
-            if (deliver != null && !deliver.isEmpty()) {
-                ObservableList<DeliverDto> deliverList = FXCollections.observableArrayList(deliver);
-                tblDeliver.setItems(deliverList);
-            } else {
-                tblDeliver.setItems(FXCollections.observableArrayList());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Failed to load deliver.").show();
-        }
+    private void loadTable() throws SQLException, ClassNotFoundException {
+        tblDeliver.setItems(FXCollections.observableArrayList(
+                deliverBO.getAllDeliver().stream().map(deliverDto ->
+                        new DeliverTM(
+                                deliverDto.getDeliverId(),
+                                deliverDto.getDeliverAddress(),
+                                deliverDto.getDeliverCharge(),
+                                deliverDto.getDeliverDate(),
+                                deliverDto.getOrderId()
+                        )).toList()
+        ));
     }
 
     private void resetPage() throws SQLException, ClassNotFoundException {
        loadNextId();
+       loadTable();
        txtDeliverAddress.clear();
        txtDeliverCharge.clear();
        txtOrderId.setValue(null);
@@ -265,8 +245,10 @@ public class DeliverController implements Initializable {
     }
 
     private void loadNextId() throws SQLException, ClassNotFoundException {
-        lblId.setText(deliverModel.getNextId());
+        String nextId = deliverBO.getNextId();
+        lblId.setText(nextId);
     }
 }
 
 
+*/

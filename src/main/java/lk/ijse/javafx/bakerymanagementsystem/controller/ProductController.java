@@ -12,6 +12,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.ProductDto;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.SalaryDto;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.ProductTM;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.ProductBO;
 import lk.ijse.javafx.bakerymanagementsystem.model.ProductModel;
 import lk.ijse.javafx.bakerymanagementsystem.model.SupplierModel;
 
@@ -23,48 +27,22 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class ProductController implements Initializable {
+    public AnchorPane ancProduct;
+    public ComboBox<String> cmbSupplierId;
+    public TableColumn<ProductTM,String> colId;
+    public TableColumn<ProductTM,String> colName;
+    public TableColumn<ProductTM,Double> colPrice;
+    public TableColumn<ProductTM,Integer> colStockQuantity;
+    public TableColumn<ProductTM,String> colSupplierId;
+    public Label lblId;
+    public Label lblId1;
+    public TableView<ProductDto> tblProduct;
+    public TextField txtName;
+    public TextField txtPrice;
+    public TextField txtStockQuantity;
 
-    @FXML
-    private AnchorPane ancProduct;
-
-    @FXML
-    private ComboBox<String> cmbSupplierId;
-
-    @FXML
-    private TableColumn<ProductDto,String> colId;
-
-    @FXML
-    private TableColumn<ProductDto,String> colName;
-
-    @FXML
-    private TableColumn<ProductDto,Double> colPrice;
-
-    @FXML
-    private TableColumn<ProductDto,Integer> colStockQuantity;
-
-    @FXML
-    private TableColumn<ProductDto,String> colSupplierId;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private Label lblId1;
-
-    @FXML
-    private TableView<ProductDto> tblProduct;
-
-    @FXML
-    private TextField txtName;
-
-    @FXML
-    private TextField txtPrice;
-
-    @FXML
-    private TextField txtStockQuantity;
-
+    private final ProductBO productBO = BOFactory.getInstance().getBo(BOTypes.PRODUCT);
     private final String pricePattern = "^\\d+(\\.\\d{1,2})?$";
-
     private final ProductModel productModel = new ProductModel();
     private final SupplierModel supplierModel = new SupplierModel();
 

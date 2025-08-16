@@ -12,7 +12,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.DeliverDto;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.IngredientDto;
-import lk.ijse.javafx.bakerymanagementsystem.model.DeliverModel;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.IngredientTM;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.IngredientBO;
 import lk.ijse.javafx.bakerymanagementsystem.model.IngredientModel;
 
 import java.net.URL;
@@ -23,43 +26,20 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 public class IngredientController implements Initializable {
+    public AnchorPane ancIngredient;
+    public TableColumn<IngredientTM, String> colExpireDate;
+    public TableColumn<IngredientTM, String> colIngredientId;
+    public TableColumn<IngredientTM, String> colName;
+    public TableColumn<IngredientTM, Double> colQuantityAvailable;
+    public TableColumn<IngredientTM, String> colSupplierId;
+    public Label lblId;
+    public TableView<IngredientDto> tblIngredient;
+    public DatePicker txtExpierDate;
+    public TextField txtName;
+    public TextField txtQuantityAvailable;
+    public ComboBox<String> txtSupplierId;
 
-    @FXML
-    private AnchorPane ancIngredient;
-
-    @FXML
-    private TableColumn<IngredientDto, String> colExpireDate;
-
-    @FXML
-    private TableColumn<IngredientDto, String> colIngredientId;
-
-    @FXML
-    private TableColumn<IngredientDto, String> colName;
-
-    @FXML
-    private TableColumn<IngredientDto, Double> colQuantityAvailable;
-
-    @FXML
-    private TableColumn<IngredientDto, String> colSupplierId;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private TableView<IngredientDto> tblIngredient;
-
-    @FXML
-    private DatePicker txtExpierDate;
-
-    @FXML
-    private TextField txtName;
-
-    @FXML
-    private TextField txtQuantityAvailable;
-
-    @FXML
-    private ComboBox<String> txtSupplierId;
-
+    private final IngredientBO ingredientBO = BOFactory.getInstance().getBo(BOTypes.INGREDIENT);
     private final IngredientModel ingredientModel = new IngredientModel();
 
     @FXML

@@ -110,8 +110,8 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public boolean existsCustomerByPhoneNumber(String phoneNumber) throws SQLException, ClassNotFoundException {
-        ResultSet resultSet = SQLUtil.execute("SELECT * FROM customer WHERE phone = ?", phoneNumber);
+    public boolean existsCustomerByContactNumber(String contact) throws SQLException, ClassNotFoundException {
+        ResultSet resultSet = SQLUtil.execute("SELECT * FROM customer WHERE contact = ?", contact);
         return resultSet.next();
     }
 }

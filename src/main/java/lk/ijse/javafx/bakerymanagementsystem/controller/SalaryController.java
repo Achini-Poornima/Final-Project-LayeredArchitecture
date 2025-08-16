@@ -12,6 +12,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.SalaryDto;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.SalaryTM;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.SalaryBO;
 import lk.ijse.javafx.bakerymanagementsystem.model.EmployeeModel;
 import lk.ijse.javafx.bakerymanagementsystem.model.SalaryModel;
 
@@ -23,50 +27,22 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 public class SalaryController implements Initializable {
+    public DatePicker txtPaymentDate;
+    public AnchorPane ancSalary;
+    public TableColumn<SalaryTM,Integer> colBasicSalary;
+    public TableColumn<SalaryTM,Integer> colBonus;
+    public TableColumn<SalaryTM,String> colEmployeeId;
+    public TableColumn<SalaryTM,Integer> colNetSalary;
+    public TableColumn<SalaryTM,String> colPaymentDate;
+    public TableColumn<SalaryTM,String> colSalaryId;
+    public Label lblId;
+    public TableView<SalaryDto> tblSalary;
+    public TextField txtBasicSalary;
+    public TextField txtBonus;
+    public ComboBox<String> cmbEmployeeId;
+    public Label txtNetSalary;
 
-    @FXML
-    private  DatePicker txtPaymentDate;
-
-    @FXML
-    private AnchorPane ancSalary;
-
-    @FXML
-    private TableColumn<SalaryDto,Integer> colBasicSalary;
-
-    @FXML
-    private TableColumn<SalaryDto,Integer> colBonus;
-
-    @FXML
-    private TableColumn<SalaryDto,String> colEmployeeId;
-
-    @FXML
-    private TableColumn<SalaryDto,Integer> colNetSalary;
-
-    @FXML
-    private TableColumn<SalaryDto,String> colPaymentDate;
-
-    @FXML
-    private TableColumn<SalaryDto,String> colSalaryId;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private TableView<SalaryDto> tblSalary;
-
-    @FXML
-    private TextField txtBasicSalary;
-
-    @FXML
-    private TextField txtBonus;
-
-    @FXML
-    private ComboBox<String> cmbEmployeeId;
-
-    @FXML
-    private Label txtNetSalary;
-
-
+    private final SalaryBO salaryBO = BOFactory.getInstance().getBo(BOTypes.SALARY);
     private final SalaryModel salaryModel = new SalaryModel();
     private final EmployeeModel employeeModel=new EmployeeModel();
 

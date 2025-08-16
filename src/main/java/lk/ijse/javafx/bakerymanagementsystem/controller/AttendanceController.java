@@ -12,7 +12,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.AttendanceDto;
-import lk.ijse.javafx.bakerymanagementsystem.model.AttendanceModel;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.AttendanceTM;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.AttendanceBO;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.impl.AttendanceBOImpl;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
+import lk.ijse.javafx.bakerymanagementsystem.entity.Attendance;
+//import lk.ijse.javafx.bakerymanagementsystem.model.AttendanceModel;
 import lk.ijse.javafx.bakerymanagementsystem.model.EmployeeModel;
 
 import java.net.URL;
@@ -23,60 +30,32 @@ import java.util.*;
 
 public class AttendanceController implements Initializable {
 
-    @FXML
-    private AnchorPane ancAttendance;
+    public AnchorPane ancAttendance;
 
-    @FXML
-    private ComboBox<String> cmbEmployeeId;
+    public ComboBox<String> cmbEmployeeId;
+    public TableColumn<AttendanceTM, String> colAttendanceId;
+    public TableColumn<AttendanceTM, String> colDate;
+    public TableColumn<AttendanceTM, String> colEmployeeId;
+    public TableColumn<AttendanceTM, String> colInTime;
+    public TableColumn<AttendanceTM, String> colOutTime;
+    public TableView<AttendanceTM> tblAttendance;
 
-    @FXML
-    private TableColumn<AttendanceDto, String> colAttendanceId;
-
-    @FXML
-    private TableColumn<AttendanceDto, String> colDate;
-
-    @FXML
-    private TableColumn<AttendanceDto, String> colEmployeeId;
-
-    @FXML
-    private TableColumn<AttendanceDto, String> colInTime;
-
-    @FXML
-    private TableColumn<AttendanceDto, String> colOutTime;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private Label lblInTime;
-
-    @FXML
-    private Label lblOutTime;
-
-    @FXML
-    private TableView<AttendanceDto> tblAttendance;
-
-    @FXML
-    private DatePicker txtDate;
-
-    @FXML
-    private TextField txtInTimeHour;
-
-    @FXML
-    private TextField txtInTimeMin;
-
-    @FXML
-    private TextField txtOutTimeHour;
-
-    @FXML
-    private TextField txtOutTimeMin;
+    public Label lblId;
+    public Label lblInTime;
+    public Label lblOutTime;
+    public DatePicker txtDate;
+    public TextField txtInTimeHour;
+    public TextField txtInTimeMin;
+    public TextField txtOutTimeHour;
+    public TextField txtOutTimeMin;
     
-    private final AttendanceModel attendanceModel = new AttendanceModel();
+//    private final AttendanceModel attendanceModel = new AttendanceModel();
     private final EmployeeModel employeeModel = new EmployeeModel();
+    private final AttendanceBO attendanceBO = new AttendanceBOImpl();
 
     @FXML
     void btnDeleteOnAction(ActionEvent event) {
-        AttendanceDto selectedAttendance = tblAttendance.getSelectionModel().getSelectedItem();
+        AttendanceTM selectedAttendance = tblAttendance.getSelectionModel().getSelectedItem();
         if (selectedAttendance == null) {
             new Alert(Alert.AlertType.WARNING, "Please select a Attendance Details to delete.").show();
             return;
@@ -89,18 +68,19 @@ public class AttendanceController implements Initializable {
         Optional<ButtonType> result = confirmationAlert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                boolean isDeleted = attendanceModel.deleteAttendance(selectedAttendance.getAttendanceId());
+                String attendanceId = lblId.getText();
+                boolean isDeleted = attendanceBO.deleteAttendance(attendanceId);
                 if (isDeleted) {
                     new Alert(Alert.AlertType.INFORMATION, "Attendance Details deleted successfully!").show();
-                    loadTable();
                     resetPage();
-                    loadNextId();
                 } else {
                     new Alert(Alert.AlertType.WARNING, "Failed to delete Attendance Details!").show();
                 }
-            } catch (SQLException | ClassNotFoundException e) {
+            } catch (InUseException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+            } catch (Exception e) {
                 e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+                new Alert(Alert.AlertType.ERROR, "Fail to delete customer..!").show();
             }
         }
     }
@@ -117,15 +97,9 @@ public class AttendanceController implements Initializable {
         AttendanceDto attendanceDto = createAttendanceDtoFromInputs();
 
         try {
-            boolean isAdded = attendanceModel.saveAttendance(attendanceDto);
-            if (isAdded) {
-                new Alert(Alert.AlertType.INFORMATION, "Attendance added successfully!").show();
-                loadTable();
+            attendanceBO.saveAttendance(attendanceDto);
                 resetPage();
-                loadNextId();
-            } else {
-                new Alert(Alert.AlertType.WARNING, "Failed to add Attendance!").show();
-            }
+                new Alert(Alert.AlertType.INFORMATION, "Attendance added successfully!").show();
         } catch (SQLIntegrityConstraintViolationException e) {
             new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
         } catch (SQLException e) {
@@ -166,22 +140,16 @@ public class AttendanceController implements Initializable {
 
         AttendanceDto attendanceDto = createAttendanceDtoFromInputs();
         try {
-            boolean isUpdated = attendanceModel.updateAttendance(attendanceDto);
-            if (isUpdated) {
-                new Alert(Alert.AlertType.INFORMATION, "Attendance Details updated successfully!").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            } else {
-                new Alert(Alert.AlertType.WARNING, "Failed to update Attendance Details!").show();
-            }
-        } catch (SQLException e) {
+            attendanceBO.updateAttendance(attendanceDto);
+            resetPage();
+        } catch (NotFoundException | DuplicateException e) {
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+        } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            new Alert(
+                    Alert.AlertType.ERROR, "Fail to update customer..!"
+            ).show();
         }
-
     }
 
     public void onInHour(KeyEvent keyEvent) {
@@ -260,13 +228,17 @@ public class AttendanceController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+
+        colAttendanceId.setCellValueFactory(new PropertyValueFactory<>("attendanceId"));
+        colEmployeeId.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
+        colInTime.setCellValueFactory(new PropertyValueFactory<>("inTime"));
+        colOutTime.setCellValueFactory(new PropertyValueFactory<>("outTime"));
+        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+
         try {
-            loadTable();
-            loadNextId();
             resetPage();
             loadEmployeeIds();
         }catch (Exception e){
-            e.printStackTrace();
             new Alert(Alert.AlertType.ERROR,"Fail to load table.");
         }
     }
@@ -289,32 +261,25 @@ public class AttendanceController implements Initializable {
     }
 
     private void loadNextId() throws SQLException, ClassNotFoundException {
-        lblId.setText(attendanceModel.getNextId());
+        String nextId = attendanceBO.getNextId();
+        lblId.setText(nextId);
     }
 
-    private void loadTable() {
-        colAttendanceId.setCellValueFactory(new PropertyValueFactory<>("attendanceId"));
-        colEmployeeId.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
-        colInTime.setCellValueFactory(new PropertyValueFactory<>("inTime"));
-        colOutTime.setCellValueFactory(new PropertyValueFactory<>("outTime"));
-        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
-
-        try {
-            ArrayList<AttendanceDto> attendance = attendanceModel.getAllAttendance();
-            if (attendance != null && !attendance.isEmpty()) {
-                ObservableList<AttendanceDto> attendanceList = FXCollections.observableArrayList(attendance);
-                tblAttendance.setItems(attendanceList);
-            } else {
-                tblAttendance.setItems(FXCollections.observableArrayList());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Failed to load Attendance Details.").show();
-        }
+    private void loadTable() throws SQLException, ClassNotFoundException {
+        tblAttendance.setItems(FXCollections.observableArrayList(
+                attendanceBO.getAllAttendance().stream().map(attendanceDto ->
+                        new AttendanceTM(
+                                attendanceDto.getAttendanceId(),
+                                attendanceDto.getEmployeeId(),
+                                attendanceDto.getInTime(),
+                                attendanceDto.getOutTime(),
+                                attendanceDto.getDate()
+                        )).toList()
+        ));
     }
 
     public void onSetData(MouseEvent mouseEvent) {
-        AttendanceDto selectAttendance = tblAttendance.getSelectionModel().getSelectedItem();
+        AttendanceTM selectAttendance = tblAttendance.getSelectionModel().getSelectedItem();
         if (selectAttendance != null){
             lblId.setText(selectAttendance.getAttendanceId());
             cmbEmployeeId.setValue(selectAttendance.getEmployeeId());

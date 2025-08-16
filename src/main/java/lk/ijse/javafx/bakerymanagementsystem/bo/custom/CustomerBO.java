@@ -9,14 +9,14 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface CustomerBO extends SuperBO {
-    List<CustomerDto> getAllCustomer() throws SQLException;
+    List<CustomerDto> getAllCustomer() throws SQLException, ClassNotFoundException;
 
     void saveCustomer(CustomerDto dto) throws DuplicateException, Exception;
 
-    void updateCustomer(CustomerDto dto) throws SQLException;
+    void updateCustomer(CustomerDto dto) throws SQLException, ClassNotFoundException;
 
     boolean deleteCustomer(String id) throws InUseException, Exception;
 
-    String getNextId() throws SQLException;
+    String getNextId() throws SQLException, ClassNotFoundException;
 
 }

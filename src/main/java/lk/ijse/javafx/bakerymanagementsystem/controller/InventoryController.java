@@ -10,6 +10,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.InventoryDto;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.InventoryBO;
 import lk.ijse.javafx.bakerymanagementsystem.model.InventoryModel;
 
 import java.net.URL;
@@ -19,34 +22,17 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class InventoryController implements Initializable {
+    public ComboBox<String> txtProductId;
+    public ComboBox<String> txtIngredientId;
+    public TableColumn<InventoryDto, String> colIngredientId;
+    public TableColumn<InventoryDto, String> colProductId;
+    public TableColumn<InventoryDto, Integer> colStockQuantity;
+    public TableColumn<InventoryDto, String> colInventoryId;
+    public Label lblId;
+    public TableView<InventoryDto> tblInventory;
+    public TextField txtStockQuantity;
 
-    @FXML
-    private ComboBox<String> txtProductId;
-
-    @FXML
-    private ComboBox<String> txtIngredientId;
-
-    @FXML
-    private TableColumn<InventoryDto, String> colIngredientId;
-
-    @FXML
-    private TableColumn<InventoryDto, String> colProductId;
-
-    @FXML
-    private TableColumn<InventoryDto, Integer> colStockQuantity;
-
-    @FXML
-    private TableColumn<InventoryDto, String> colInventoryId;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private TableView<InventoryDto> tblInventory;
-
-    @FXML
-    private TextField txtStockQuantity;
-
+    private final InventoryBO inventoryBO = BOFactory.getInstance().getBo(BOTypes.INVENTORY);
     private final InventoryModel inventoryModel = new InventoryModel();
 
     @FXML

@@ -11,7 +11,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.DeliverDto;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.PaymentDto;
-import lk.ijse.javafx.bakerymanagementsystem.model.DeliverModel;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.PaymentTM;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.PaymentBO;
 import lk.ijse.javafx.bakerymanagementsystem.model.PaymentModel;
 
 import java.net.URL;
@@ -23,43 +26,20 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class PaymentController implements Initializable {
+    public AnchorPane ancPayment;
+    public TableColumn<PaymentTM,Double> colAmount;
+    public TableColumn<PaymentTM,String> colOrderId;
+    public TableColumn<PaymentTM,String> colPaymentId;
+    public TableColumn<PaymentTM,String> colPaymentDate;
+    public TableColumn<PaymentTM,String> colPaymentMethod;
+    public Label lblId;
+    public TableView<PaymentDto> tblPayment;
+    public TextField txtAmount;
+    public ComboBox<String> txtOrderId;
+    public DatePicker txtPaymentDate;
+    public TextField txtPaymentMethod;
 
-    @FXML
-    private AnchorPane ancPayment;
-
-    @FXML
-    private TableColumn<PaymentDto,Double> colAmount;
-
-    @FXML
-    private TableColumn<PaymentDto,String> colOrderId;
-
-    @FXML
-    private TableColumn<PaymentDto,String> colPaymentId;
-
-    @FXML
-    private TableColumn<PaymentDto,String> colPaymentDate;
-
-    @FXML
-    private TableColumn<PaymentDto,String> colPaymentMethod;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private TableView<PaymentDto> tblPayment;
-
-    @FXML
-    private TextField txtAmount;
-
-    @FXML
-    private ComboBox<String> txtOrderId;
-
-    @FXML
-    private DatePicker txtPaymentDate;
-
-    @FXML
-    private TextField txtPaymentMethod;
-
+    private final PaymentBO paymentBO = BOFactory.getInstance().getBo(BOTypes.PAYMENT);
     PaymentModel paymentModel = new PaymentModel();
 
     @FXML

@@ -1,5 +1,6 @@
 package lk.ijse.javafx.bakerymanagementsystem.bo;
 
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.UserBO;
 import lk.ijse.javafx.bakerymanagementsystem.bo.custom.impl.*;
 
 public class BOFactory {

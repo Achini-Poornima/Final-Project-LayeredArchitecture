@@ -11,6 +11,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.EmployeeDto;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.EmployeeTM;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.EmployeeBO;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.impl.EmployeeBOImpl;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
 import lk.ijse.javafx.bakerymanagementsystem.model.EmployeeModel;
 
 import java.net.URL;
@@ -21,68 +29,33 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class EmployeeController implements Initializable {
+    public AnchorPane ancEmployee;
+    public TableColumn<EmployeeTM, String> colAddress;
+    public TableColumn<EmployeeTM, String> colContactNo;
+    public TableColumn<EmployeeTM, String> colDateOfBirth;
+    public TableColumn<EmployeeTM, String> colEmail;
+    public TableColumn<EmployeeTM, String> colHireDate;
+    public TableColumn<EmployeeTM, String> colName;
+    public TableColumn<EmployeeTM, String> colRole;
+    public TableColumn<EmployeeTM, String> colId;
+    public Label lblId;
+    public TableView<EmployeeTM> tblEmployee;
+    public TextField txtAddress;
+    public TextField txtContactNo;
+    public DatePicker txtDateOfBirth;
+    public TextField txtEmail;
+    public DatePicker txtJoinDate;
+    public TextField txtName;
+    public TextField txtRole;
 
-    @FXML
-    private AnchorPane ancEmployee;
-
-    @FXML
-    private TableColumn<EmployeeDto, String> colAddress;
-
-    @FXML
-    private TableColumn<EmployeeDto, String> colContactNo;
-
-    @FXML
-    private TableColumn<EmployeeDto, String> colDateOfBirth;
-
-    @FXML
-    private TableColumn<EmployeeDto, String> colEmail;
-
-    @FXML
-    private TableColumn<EmployeeDto, String> colHireDate;
-
-    @FXML
-    private TableColumn<EmployeeDto, String> colName;
-
-    @FXML
-    private TableColumn<EmployeeDto, String> colRole;
-
-    @FXML
-    private TableColumn<EmployeeDto, String> colid;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private TableView<EmployeeDto> tblEmployee;
-
-    @FXML
-    private TextField txtAddress;
-
-    @FXML
-    private TextField txtContactNo;
-
-    @FXML
-    private DatePicker txtDateOfBirth;
-
-    @FXML
-    private TextField txtEmail;
-
-    @FXML
-    private DatePicker txtJoinDate;
-
-    @FXML
-    private TextField txtName;
-
-    @FXML
-    private TextField txtRole;
-
+    private final EmployeeBO employeeBO = BOFactory.getInstance().getBo(BOTypes.EMPLOYEE);
     private final EmployeeModel employeeModel = new EmployeeModel();
     private final String contactPattern = "^[0-9]{10}$";
     private final String emailPattern = "^[\\w!#$%&'*+/=?{|}~^-]+(?:\\.[\\w!#$%&'*+/=?{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$";
 
     @FXML
     void btnDeleteOnAction(ActionEvent event) {
-        EmployeeDto selectedUser = (EmployeeDto) tblEmployee.getSelectionModel().getSelectedItem();
+        EmployeeTM selectedUser = (EmployeeTM) tblEmployee.getSelectionModel().getSelectedItem();
         if (selectedUser == null) {
             new Alert(Alert.AlertType.WARNING, "Please select a Employee to delete.").show();
             return;
@@ -91,9 +64,11 @@ public class EmployeeController implements Initializable {
         confirmationAlert.initStyle(StageStyle.UNDECORATED);
         confirmationAlert.setContentText("Are you sure you want to delete this Employee?");
         Optional<ButtonType> result = confirmationAlert.showAndWait();
+
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                boolean isDeleted = employeeModel.deleteEmployee(selectedUser.getEmployeeId());
+                String employeeId = lblId.getText();
+                boolean isDeleted = employeeBO.deleteEmployee(employeeId);
                 if (isDeleted) {
                     new Alert(Alert.AlertType.INFORMATION, "Employee deleted successfully!").show();
                     loadTable();
@@ -102,9 +77,11 @@ public class EmployeeController implements Initializable {
                 } else {
                     new Alert(Alert.AlertType.WARNING, "Failed to delete Employee!").show();
                 }
-            } catch (SQLException | ClassNotFoundException e) {
+            } catch (InUseException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+            } catch (Exception e) {
                 e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+                new Alert(Alert.AlertType.ERROR, "Fail to delete Employee..!").show();
             }
         }
     }
@@ -120,20 +97,16 @@ public class EmployeeController implements Initializable {
         EmployeeDto employeeDto = createEmployeeDtoFromInputs();
 
         try {
-            boolean isSaved = employeeModel.saveEmployee(employeeDto);
-            if (isSaved) {
-                new Alert(Alert.AlertType.INFORMATION, "Employee saved successfully!").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            } else {
-                new Alert(Alert.AlertType.WARNING, "Failed to save Employee!").show();
-            }
-        } catch (SQLException e) {
+            employeeBO.saveEmployee(employeeDto);
+            new Alert(Alert.AlertType.INFORMATION, "Employee saved successfully!").show();
+            resetPage();
+
+        } catch (DuplicateException e) {
+            System.out.println(e.getMessage());
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+        } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            new Alert(Alert.AlertType.ERROR, "Fail to save employee..!").show();
         }
 
     }
@@ -143,20 +116,15 @@ public class EmployeeController implements Initializable {
         if (!validDateInpts()) return;
         EmployeeDto employeeDto = createEmployeeDtoFromInputs();
         try {
-            boolean isUpdated = employeeModel.updateEmployee(employeeDto);
-            if (isUpdated) {
-                new Alert(Alert.AlertType.INFORMATION, "Employee updated successfully!").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            } else {
-                new Alert(Alert.AlertType.WARNING, "Failed to update Employee!").show();
-            }
-        } catch (SQLException e) {
+            employeeBO.updateEmployee(employeeDto);
+            new Alert(Alert.AlertType.INFORMATION, "Employee updated successfully!").show();
+            resetPage();
+
+        } catch (NotFoundException | DuplicateException e) {
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+        } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            new Alert(Alert.AlertType.ERROR, "Fail to update employee..!").show();
         }
 
     }
@@ -176,7 +144,7 @@ public class EmployeeController implements Initializable {
 
     @FXML
     void onSetData(MouseEvent event) {
-        EmployeeDto selectedEmployee = tblEmployee.getSelectionModel().getSelectedItem();
+        EmployeeTM selectedEmployee = tblEmployee.getSelectionModel().getSelectedItem();
         if (selectedEmployee != null) {
             lblId.setText(selectedEmployee.getEmployeeId());
             txtName.setText(selectedEmployee.getName());
@@ -191,6 +159,15 @@ public class EmployeeController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        colId.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
+        colName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colContactNo.setCellValueFactory(new PropertyValueFactory<>("contactNo"));
+        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+        colHireDate.setCellValueFactory(new PropertyValueFactory<>("joinDate"));
+        colDateOfBirth.setCellValueFactory(new PropertyValueFactory<>("dateOfBirth"));
+        colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
+
         try {
             loadNextId();
             txtJoinDate.setValue(LocalDate.now());
@@ -204,6 +181,7 @@ public class EmployeeController implements Initializable {
 
     private void resetPage() throws SQLException, ClassNotFoundException {
         loadNextId();
+        loadTable();
         txtName.clear();
         txtAddress.clear();
         txtContactNo.clear();
@@ -219,28 +197,20 @@ public class EmployeeController implements Initializable {
 
     }
 
-    private void loadTable() {
-        colid.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
-        colName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        colContactNo.setCellValueFactory(new PropertyValueFactory<>("contactNo"));
-        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-        colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
-        colHireDate.setCellValueFactory(new PropertyValueFactory<>("joinDate"));
-        colDateOfBirth.setCellValueFactory(new PropertyValueFactory<>("dateOfBirth"));
-        colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
-
-        try {
-            ArrayList<EmployeeDto> employees = employeeModel.getAllEmployees();
-            if (employees != null) {
-                ObservableList<EmployeeDto> employeeList = FXCollections.observableArrayList(employees);
-                tblEmployee.setItems(employeeList);
-            } else {
-                tblEmployee.setItems(FXCollections.observableArrayList());
-            }
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Fail to load employees.").show();
-        }
+    private void loadTable() throws SQLException, ClassNotFoundException {
+        tblEmployee.setItems(FXCollections.observableArrayList(
+                employeeBO.getAllEmployee().stream().map(employeeDto ->
+                        new EmployeeTM(
+                                employeeDto.getEmployeeId(),
+                                employeeDto.getName(),
+                                employeeDto.getContactNo(),
+                                employeeDto.getEmail(),
+                                employeeDto.getAddress(),
+                                employeeDto.getJoinDate(),
+                                employeeDto.getDateOfBirth(),
+                                employeeDto.getRole()
+                        )).toList()
+        ));
     }
 
     private boolean validDateInpts() {

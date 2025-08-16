@@ -10,52 +10,37 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.UserTM;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.UserDto;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.UserBO;
 import lk.ijse.javafx.bakerymanagementsystem.model.UserModel;
 
 import java.net.URL;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class UserController implements Initializable {
-
-    @FXML
-    private AnchorPane ancUser;
-
-    @FXML
-    private TableColumn<UserDto, String> coUserName;
-
-    @FXML
-    private TableColumn<UserDto, String> colPassword;
-
-    @FXML
-    private TableColumn<UserDto, String> colRole;
-
-    @FXML
-    private TableColumn<UserDto, String> colId;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private TableView<UserDto> tblUser;
-
-    @FXML
-    private TextField txtPassword;
-
-    @FXML
-    private TextField txtRole;
-
-    @FXML
-    private TextField txtUserName;
+    public AnchorPane ancUser;
+    public TableColumn<UserTM, String> coUserName;
+    public TableColumn<UserTM, String> colPassword;
+    public TableColumn<UserTM, String> colRole;
+    public TableColumn<UserTM, String> colId;
+    public Label lblId;
+    public TableView<UserDto> tblUser;
+    public TextField txtPassword;
+    public TextField txtRole;
+    public TextField txtUserName;
 
     private final UserModel userModel = new UserModel();
     private final String usernamePattern = "^[a-zA-Z][a-zA-Z0-9_]{4,19}$";
     private final String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()\\-+])[A-Za-z\\d!@#$%^&*()\\-+]{8,}$";
-
+    private final UserBO userBO = BOFactory.getInstance().getBo(BOTypes.USER);
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {

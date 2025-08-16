@@ -1,15 +1,13 @@
-package lk.ijse.javafx.bakerymanagementsystem.Dto;
+package lk.ijse.javafx.bakerymanagementsystem.Dto.TM;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
-
-@NoArgsConstructor
-@AllArgsConstructor
-@Setter
-@Getter
 @ToString
-public class InventoryDto {
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class InventoryTM {
     private String inventoryId;
     private int stockQuantity;
     private String productId;

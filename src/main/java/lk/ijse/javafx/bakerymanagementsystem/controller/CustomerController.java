@@ -1,7 +1,6 @@
 package lk.ijse.javafx.bakerymanagementsystem.controller;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,7 +15,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.CustomerDto;
-import lk.ijse.javafx.bakerymanagementsystem.model.CustomerModel;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.CustomerTM;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.CustomerBO;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -26,43 +31,30 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class CustomerController implements Initializable {
-    @FXML
     public TextField txtNic;
-    @FXML
     public TextField txtEmail;
-    @FXML
-    private TableColumn<CustomerDto, String> colNic;
-    @FXML
-    private TableColumn<CustomerDto, String> colEmail;
-    @FXML
-    private AnchorPane ancCustomer;
-    @FXML
-    private TableColumn<CustomerDto,String> colName;
-    @FXML
-    private TableColumn<CustomerDto,String> colAddress;
-    @FXML
-    private TableColumn<CustomerDto,String> colContact;
-    @FXML
-    private TableColumn<CustomerDto,String> colId;
-    @FXML
-    private Label lblId;
-    @FXML
-    private TableView<CustomerDto> tblCustomer;
-    @FXML
-    private TextField txtAddress;
-    @FXML
-    private TextField txtContact;
-    @FXML
-    private TextField txtName;
+    public Label lblId;
+    public TextField txtAddress;
+    public TextField txtContact;
+    public TextField txtName;
+    public AnchorPane ancCustomer;
 
+    public TableColumn<CustomerTM, String> colNic;
+    public TableColumn<CustomerTM, String> colEmail;
+    public TableColumn<CustomerTM,String> colName;
+    public TableColumn<CustomerTM,String> colAddress;
+    public TableColumn<CustomerTM,String> colContact;
+    public TableColumn<CustomerTM,String> colId;
+    public TableView<CustomerTM> tblCustomer;
+
+    private final CustomerBO customerBO = BOFactory.getInstance().getBo(BOTypes.CUSTOMER);
     private final String nicPattern =  "^[0-9]{9}[vVxX]$|^[0-9]{12}$";
     private final String phonePattern = "^[0-9]{10}$";
     private final String emailPattern = "^[\\w!#$%&'*+/=?{|}~^-]+(?:\\.[\\w!#$%&'*+/=?{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$";
-    private final CustomerModel customerModel = new CustomerModel();
 
     @FXML
     void btnDeleteOnAction(ActionEvent event) {
-        CustomerDto selectedUser = tblCustomer.getSelectionModel().getSelectedItem();
+        CustomerTM selectedUser = tblCustomer.getSelectionModel().getSelectedItem();
         if (selectedUser == null) {
             new Alert(Alert.AlertType.WARNING, "Please select a Customer to delete.").show();
             return;
@@ -71,21 +63,23 @@ public class CustomerController implements Initializable {
         Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmationAlert.initStyle(StageStyle.UNDECORATED);
         confirmationAlert.setContentText("Are you sure you want to delete this Customer?");
-
         Optional<ButtonType> result = confirmationAlert.showAndWait();
+
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                boolean isDeleted = customerModel.deleteCustomer(selectedUser.getCustomerId());
+                String id = lblId.getText();
+                boolean isDeleted = customerBO.deleteCustomer(id);
                 if (isDeleted) {
                     new Alert(Alert.AlertType.INFORMATION, "Customer deleted successfully!").show();
-                    loadTable();
                     resetPage();
                 } else {
                     new Alert(Alert.AlertType.WARNING, "Failed to delete Customer!").show();
                 }
-            } catch (SQLException | ClassNotFoundException e) {
+            } catch (InUseException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+            } catch (Exception e) {
                 e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+                new Alert(Alert.AlertType.ERROR, "Fail to delete customer..!").show();
             }
         }
     }
@@ -107,21 +101,15 @@ public class CustomerController implements Initializable {
         CustomerDto customerDto = createCustomerDtoFromInputs();
 
         try {
-            boolean isSaved = customerModel.saveCustomer(customerDto);
-            if (isSaved) {
-                new Alert(Alert.AlertType.INFORMATION, "Customer saved successfully.").show();
-                resetPage();
-                loadTable();
-            } else {
-                new Alert(Alert.AlertType.ERROR, "Failed to save customer.").show();
-            }
-        } catch (SQLIntegrityConstraintViolationException e) {
-            new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-        } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+            customerBO.saveCustomer(customerDto);
+            resetPage();
+            new Alert(Alert.AlertType.INFORMATION, "Customer saved successfully.").show();
+        } catch (DuplicateException e) {
+            System.out.println(e.getMessage());
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "An error occurred while saving customer.").show();
+            new Alert(Alert.AlertType.ERROR, "Fail to save customer..!").show();
         }
     }
 
@@ -197,27 +185,28 @@ public class CustomerController implements Initializable {
         CustomerDto customerDto = createCustomerDtoFromInputs();
 
         try {
-            boolean isUpdated = customerModel.updateCustomer(customerDto);
-            if (isUpdated) {
-                new Alert(Alert.AlertType.INFORMATION, "Customer updated successfully!").show();
-                loadTable();
-                resetPage();
-            } else {
-                new Alert(Alert.AlertType.WARNING, "Failed to update Customer!").show();
-            }
-        } catch (SQLException e) {
+            customerBO.updateCustomer(customerDto);
+            new Alert(Alert.AlertType.INFORMATION, "Customer updated successfully!").show();
+            resetPage();
+        } catch (NotFoundException | DuplicateException e) {
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+        } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
-        } catch (ClassNotFoundException e) {
-            new Alert(Alert.AlertType.ERROR, "Class not found error: " + e.getMessage()).show();
+            new Alert(Alert.AlertType.ERROR, "Fail to update customer..!").show();
         }
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+
+        colId.setCellValueFactory(new PropertyValueFactory<>("customerId"));
+        colName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+        colNic.setCellValueFactory(new PropertyValueFactory<>("nic"));
+        colContact.setCellValueFactory(new PropertyValueFactory<>("contact"));
+        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+
         try {
-            loadNextId();
-            loadTable();
             resetPage();
         } catch (Exception e) {
             e.printStackTrace();
@@ -226,20 +215,17 @@ public class CustomerController implements Initializable {
     }
 
     private void loadTable() throws SQLException, ClassNotFoundException {
-        colId.setCellValueFactory(new PropertyValueFactory<>("customerId"));
-        colName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
-        colNic.setCellValueFactory(new PropertyValueFactory<>("nic"));
-        colContact.setCellValueFactory(new PropertyValueFactory<>("contact"));
-        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-
-        ArrayList<CustomerDto> customers = (ArrayList<CustomerDto>) CustomerModel.getAllCustomers();
-        if (customers != null) {
-            ObservableList<CustomerDto> customerList = FXCollections.observableArrayList(customers);
-            tblCustomer.setItems(customerList);
-        } else {
-            tblCustomer.setItems(FXCollections.observableArrayList());
-        }
+        tblCustomer.setItems(FXCollections.observableArrayList(
+                customerBO.getAllCustomer().stream().map(customerDTO ->
+                        new CustomerTM(
+                                customerDTO.getCustomerId(),
+                                customerDTO.getName(),
+                                customerDTO.getAddress(),
+                                customerDTO.getNic(),
+                                customerDTO.getContact(),
+                                customerDTO.getEmail()
+                        )).toList()
+        ));
     }
 
     private void resetPage() throws SQLException, ClassNotFoundException {
@@ -250,15 +236,17 @@ public class CustomerController implements Initializable {
         txtEmail.clear();
         tblCustomer.getSelectionModel().clearSelection();
         loadNextId();
+        loadTable();
     }
 
     private void loadNextId() throws SQLException, ClassNotFoundException {
-        lblId.setText(customerModel.getNextId());
+        String nextId = customerBO.getNextId();
+        lblId.setText(nextId);
     }
 
     @FXML
     public void setData(MouseEvent mouseEvent) {
-        CustomerDto selectedCustomer = tblCustomer.getSelectionModel().getSelectedItem();
+        CustomerTM selectedCustomer = tblCustomer.getSelectionModel().getSelectedItem();
         if (selectedCustomer != null) {
             lblId.setText(selectedCustomer.getCustomerId());
             txtName.setText(selectedCustomer.getName());
@@ -271,7 +259,7 @@ public class CustomerController implements Initializable {
 
     @FXML
     public void btnSendMailOnAction(ActionEvent actionEvent) {
-        CustomerDto selectedItem = tblCustomer.getSelectionModel().getSelectedItem();
+        CustomerTM selectedItem = tblCustomer.getSelectionModel().getSelectedItem();
 
         if (selectedItem == null) {
             new Alert(Alert.AlertType.WARNING, "Please select a customer to send an email.").show();

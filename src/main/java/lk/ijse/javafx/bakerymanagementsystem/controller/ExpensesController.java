@@ -11,6 +11,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.ExpensesDto;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.ExpensesTM;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
+import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
+import lk.ijse.javafx.bakerymanagementsystem.bo.custom.ExpensesBO;
 import lk.ijse.javafx.bakerymanagementsystem.model.ExpensesModel;
 
 import java.net.URL;
@@ -22,37 +26,18 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class ExpensesController implements Initializable {
+    public AnchorPane ancExpenses;
+    public TableColumn<ExpensesTM, Double> colAmount;
+    public TableColumn<ExpensesTM, String> colCategory;
+    public TableColumn<ExpensesTM, LocalDate> colDate;
+    public TableColumn<ExpensesTM, String> colExpensesId;
+    public Label lblId;
+    public TableView<ExpensesDto> tblExpenses;
+    public TextField txtAmount;
+    public TextField txtCategory;
+    public DatePicker txtDate;
 
-    @FXML
-    private AnchorPane ancExpenses;
-
-    @FXML
-    private TableColumn<ExpensesDto, Double> colAmount;
-
-    @FXML
-    private TableColumn<ExpensesDto, String> colCategory;
-
-    @FXML
-    private TableColumn<ExpensesDto, LocalDate> colDate;
-
-    @FXML
-    private TableColumn<ExpensesDto, String> colExpensesId;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private TableView<ExpensesDto> tblExpenses;
-
-    @FXML
-    private TextField txtAmount;
-
-    @FXML
-    private TextField txtCategory;
-
-    @FXML
-    private DatePicker txtDate;
-
+    private final ExpensesBO expensesBO = BOFactory.getInstance().getBo(BOTypes.EXPENSES);
     ExpensesModel expensesModel = new ExpensesModel();
 
     private final String amountPattern = "^\\\\d+(\\\\.\\\\d{1,2})?$\n";

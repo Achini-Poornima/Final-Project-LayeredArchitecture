@@ -4,20 +4,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import lk.ijse.javafx.bakerymanagementsystem.Dto.CustomerDto;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.SupplierDto;
-import lk.ijse.javafx.bakerymanagementsystem.Dto.UserDto;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.SupplierTM;
 import lk.ijse.javafx.bakerymanagementsystem.model.SupplierModel;
 
 import java.net.URL;
@@ -28,42 +22,18 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class SupplierController implements Initializable {
-
-    @FXML
-    private AnchorPane ancSupplier;
-
-    @FXML
-    private TableColumn<?, ?> colAddress;
-
-    @FXML
-    private TableColumn<SupplierDto, String> colEmail;
-
-    @FXML
-    private TableColumn<SupplierDto, String> colName;
-
-    @FXML
-    private TableColumn<SupplierDto, String> colSuppliedIngredient;
-
-    @FXML
-    private TableColumn<SupplierDto, String> colSupplierId;
-
-    @FXML
-    private Label lblId;
-
-    @FXML
-    private TableView<SupplierDto> tblSupplier;
-
-    @FXML
-    private TextField txtEmail;
-
-    @FXML
-    private TextField txtName;
-
-    @FXML
-    private TextField txtSuppliedIngredient;
-
-    @FXML
-    private TextField txtaddress;
+    public AnchorPane ancSupplier;
+    public TableColumn<SupplierTM, String> colAddress;
+    public TableColumn<SupplierTM, String> colEmail;
+    public TableColumn<SupplierTM, String> colName;
+    public TableColumn<SupplierTM, String> colSuppliedIngredient;
+    public TableColumn<SupplierTM, String> colSupplierId;
+    public Label lblId;
+    public TableView<SupplierDto> tblSupplier;
+    public TextField txtEmail;
+    public TextField txtName;
+    public TextField txtSuppliedIngredient;
+    public TextField txtAddress;
 
     private final SupplierModel supplierModel = new SupplierModel();
 
@@ -145,7 +115,7 @@ public class SupplierController implements Initializable {
                 lblId.getText(),
                 txtName.getText(),
                 txtSuppliedIngredient.getText(),
-                txtaddress.getText(),
+                txtAddress.getText(),
                 txtEmail.getText()
         );
     }
@@ -153,7 +123,7 @@ public class SupplierController implements Initializable {
     private boolean validDatainputs() {
         String name = txtName.getText().trim();
         String supIngre = txtSuppliedIngredient.getText().trim();
-        String address = txtaddress.getText().trim();
+        String address = txtAddress.getText().trim();
         String email = txtEmail.getText().trim();
 
         if (name.isEmpty() || supIngre.isEmpty() || address.isEmpty() || email.isEmpty()) {
@@ -201,7 +171,7 @@ public class SupplierController implements Initializable {
             lblId.setText(supplierDto.getSupplierId());
             txtName.setText(supplierDto.getName());
             txtSuppliedIngredient.setText(supplierDto.getSuppliedIngredient());
-            txtaddress.setText(supplierDto.getAddress());
+            txtAddress.setText(supplierDto.getAddress());
             txtEmail.setText(supplierDto.getEmail());
         }
     }
@@ -243,7 +213,7 @@ public class SupplierController implements Initializable {
         loadNextId();
         txtName.clear();
         txtSuppliedIngredient.clear();
-        txtaddress.clear();
+        txtAddress.clear();
         txtEmail.clear();
     }
 

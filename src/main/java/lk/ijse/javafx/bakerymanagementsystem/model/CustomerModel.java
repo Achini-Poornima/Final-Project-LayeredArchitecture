@@ -1,3 +1,4 @@
+/*
 package lk.ijse.javafx.bakerymanagementsystem.model;
 
 import lk.ijse.javafx.bakerymanagementsystem.Dto.CustomerDto;
@@ -62,7 +63,7 @@ public class CustomerModel {
 
     }
 
-    public boolean deleteCustomer(String customerId) throws SQLException, ClassNotFoundException {
+    public boolean deleteEmployee(String customerId) throws SQLException, ClassNotFoundException {
         return SQLUtil.execute("delete from Customer where customer_id = ?",customerId);
     }
 
@@ -94,3 +95,4 @@ public class CustomerModel {
         return "";
     }
 }
+*/

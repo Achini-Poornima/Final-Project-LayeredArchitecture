@@ -88,7 +88,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 
     @Override
     public Optional<Employee> findById(String id) throws SQLException, ClassNotFoundException {
-        ResultSet rst = SQLUtil.execute("select name from Employee where employee_id=?", id);
+        ResultSet rst = SQLUtil.execute("SELECT * FROM Employee WHERE employee_id=?", id);
         if (rst.next()) {
             return Optional.of(new Employee(
                     rst.getString(1),
@@ -103,4 +103,5 @@ public class EmployeeDAOImpl implements EmployeeDAO {
         }
         return Optional.empty();
     }
+
 }
