@@ -1,6 +1,5 @@
 package lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl;
 
-import lk.ijse.javafx.bakerymanagementsystem.Dto.EmployeeDto;
 import lk.ijse.javafx.bakerymanagementsystem.dao.SQLUtil;
 import lk.ijse.javafx.bakerymanagementsystem.dao.custom.EmployeeDAO;
 import lk.ijse.javafx.bakerymanagementsystem.entity.Employee;
@@ -35,12 +34,12 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     }
 
     @Override
-    public String getLastId() throws SQLException, ClassNotFoundException {
+    public Optional<String> getLastId() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT employee_id FROM employee ORDER BY employee_id DESC LIMIT 1");
         if (resultSet.next()) {
-            return resultSet.getString(1);
+            return Optional.ofNullable(resultSet.getString(1));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

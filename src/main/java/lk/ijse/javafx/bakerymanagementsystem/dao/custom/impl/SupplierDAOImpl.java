@@ -1,6 +1,5 @@
 package lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl;
 
-import lk.ijse.javafx.bakerymanagementsystem.Dto.SupplierDto;
 import lk.ijse.javafx.bakerymanagementsystem.dao.SQLUtil;
 import lk.ijse.javafx.bakerymanagementsystem.dao.custom.SupplierDAO;
 import lk.ijse.javafx.bakerymanagementsystem.entity.Supplier;
@@ -30,12 +29,12 @@ public class SupplierDAOImpl implements SupplierDAO {
     }
 
     @Override
-    public String getLastId() throws SQLException, ClassNotFoundException {
+    public Optional<String> getLastId() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT supplier_id FROM supplier ORDER BY supplier_id DESC LIMIT 1");
         if (resultSet.next()) {
-            return resultSet.getString(1);
+            return Optional.ofNullable(resultSet.getString(1));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -81,6 +80,6 @@ public class SupplierDAOImpl implements SupplierDAO {
 
     @Override
     public Optional<Supplier> findById(String id) {
-        return null;
+        return Optional.empty();
     }
 }

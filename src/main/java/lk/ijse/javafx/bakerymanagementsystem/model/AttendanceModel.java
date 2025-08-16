@@ -1,4 +1,4 @@
-//package lk.ijse.javafx.bakerymanagementsystem.model;
+package lk.ijse.javafx.bakerymanagementsystem.model;
 
 import lk.ijse.javafx.bakerymanagementsystem.Dto.AttendanceDto;
 import lk.ijse.javafx.bakerymanagementsystem.dao.SQLUtil;
@@ -7,8 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-//public class AttendanceModel {
-    /*public ArrayList<AttendanceDto> getAllAttendance() throws SQLException, ClassNotFoundException {
+public class AttendanceModel {
+    public ArrayList<AttendanceDto> getAllAttendance() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT * FROM Attendance");
         ArrayList<AttendanceDto> attendanceDtos = new ArrayList<>();
         while (resultSet.next()){
@@ -51,4 +51,4 @@ import java.util.ArrayList;
         String sql = "DELETE FROM Attendance WHERE attendance_id = ?";
         return SQLUtil.execute(sql,attendanceId);
     }
-}*/
+}

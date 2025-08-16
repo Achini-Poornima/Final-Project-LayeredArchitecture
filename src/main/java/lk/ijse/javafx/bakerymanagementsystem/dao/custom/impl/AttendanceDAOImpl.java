@@ -30,12 +30,12 @@ public class AttendanceDAOImpl implements AttendanceDAO {
     }
 
     @Override
-    public String getLastId() throws SQLException, ClassNotFoundException {
+    public Optional<String> getLastId() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT attendance_id FROM attendance ORDER BY attendance_id DESC LIMIT 1");
         if (resultSet.next()) {
-            return resultSet.getString(1);
+            return Optional.ofNullable(resultSet.getString(1));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -65,5 +65,19 @@ public class AttendanceDAOImpl implements AttendanceDAO {
     @Override
     public Optional<Attendance> findById(String id) {
         return null;
+    }
+
+    @Override
+    public List<String> getAllEmployeeIds() throws SQLException, ClassNotFoundException {
+        ResultSet rst = SQLUtil.execute(
+                "select employee_id from Employee"
+        );
+
+        ArrayList<String> list = new ArrayList<>();
+        while (rst.next()) {
+            String id = rst.getString(1);
+            list.add(id);
+        }
+        return list;
     }
 }

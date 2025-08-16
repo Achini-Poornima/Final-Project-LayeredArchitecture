@@ -16,7 +16,11 @@ import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.SalaryTM;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
 import lk.ijse.javafx.bakerymanagementsystem.bo.custom.SalaryBO;
-import lk.ijse.javafx.bakerymanagementsystem.model.EmployeeModel;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.SalaryDAO;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl.SalaryDAOImpl;
 import lk.ijse.javafx.bakerymanagementsystem.model.SalaryModel;
 
 import java.net.URL;
@@ -42,9 +46,9 @@ public class SalaryController implements Initializable {
     public ComboBox<String> cmbEmployeeId;
     public Label txtNetSalary;
 
+    private final SalaryDAO salaryDAO = new SalaryDAOImpl();
     private final SalaryBO salaryBO = BOFactory.getInstance().getBo(BOTypes.SALARY);
     private final SalaryModel salaryModel = new SalaryModel();
-    private final EmployeeModel employeeModel=new EmployeeModel();
 
     @FXML
 void btnDeleteOnAction(ActionEvent event) {
@@ -61,18 +65,19 @@ void btnDeleteOnAction(ActionEvent event) {
         Optional<ButtonType> result = confirmationAlert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                boolean isDeleted = salaryModel.deleteSalary(selectedSalary.getSalaryId());
+                String id = lblId.getText();
+                boolean isDeleted = salaryBO.deleteSalary(id);
                 if (isDeleted) {
-                    new Alert(Alert.AlertType.INFORMATION, "Salary Details deleted successfully!").show();
-                    loadTable();
+                    new Alert(Alert.AlertType.INFORMATION, "Salary deleted successfully!").show();
                     resetPage();
-                    loadNextId();
                 } else {
-                    new Alert(Alert.AlertType.WARNING, "Failed to delete Salary Details!").show();
+                    new Alert(Alert.AlertType.WARNING, "Failed to delete Salary!").show();
                 }
-            } catch (SQLException | ClassNotFoundException e) {
+            } catch (InUseException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+            } catch (Exception e) {
                 e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+                new Alert(Alert.AlertType.ERROR, "Fail to delete salary..!").show();
             }
         }
     }
@@ -90,26 +95,19 @@ void btnDeleteOnAction(ActionEvent event) {
     void btnSaveOnAction(ActionEvent event) {
         if (!validDateInputs()) return;
 
-        SalaryDto SalaryDto = createSalaryDtoFromInputs();
+        SalaryDto salaryDto = createSalaryDtoFromInputs();
 
-            try {
-                boolean isAdded = salaryModel.saveSalary(SalaryDto);
-                if (isAdded) {
-                    new Alert(Alert.AlertType.INFORMATION, "Salary added successfully!").show();
-                    loadTable();
-                    resetPage();
-                    loadNextId();
-                } else {
-                    new Alert(Alert.AlertType.WARNING, "Failed to add Salary!").show();
-                }
-            } catch (SQLIntegrityConstraintViolationException e) {
-                new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-            } catch (SQLException e) {
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while adding the Salary!").show();
-            }
+        try {
+            salaryBO.saveSalary(salaryDto);
+            resetPage();
+            new Alert(Alert.AlertType.INFORMATION, "Salary saved successfully.").show();
+        } catch (DuplicateException e) {
+            System.out.println(e.getMessage());
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "Fail to save salary..!").show();
+        }
     }
 
     private SalaryDto createSalaryDtoFromInputs() {
@@ -174,22 +172,16 @@ void btnDeleteOnAction(ActionEvent event) {
         if (!validDateInputs()) return;
 
         SalaryDto salaryDto = createSalaryDtoFromInputs();
-            try {
-                boolean isUpdated = salaryModel.updateSalary(salaryDto);
-                if (isUpdated) {
-                    new Alert(Alert.AlertType.INFORMATION, "Salary Details updated successfully!").show();
-                    loadTable();
-                    resetPage();
-                    loadNextId();
-                } else {
-                    new Alert(Alert.AlertType.WARNING, "Failed to update Salary Details!").show();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            salaryBO.updateSalary(salaryDto);
+            new Alert(Alert.AlertType.INFORMATION, "Salary updated successfully!").show();
+            resetPage();
+        } catch (NotFoundException | DuplicateException e) {
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "Fail to update salary..!").show();
+        }
     }
 
     @FXML
@@ -207,12 +199,15 @@ void btnDeleteOnAction(ActionEvent event) {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        try {
-            loadTable();
-            resetPage();
-            loadNextId();
-            loadEmployeeIds();
+        colSalaryId.setCellValueFactory(new PropertyValueFactory<>("salaryId"));
+        colBasicSalary.setCellValueFactory(new PropertyValueFactory<>("basicSalary"));
+        colBonus.setCellValueFactory(new PropertyValueFactory<>("bonus"));
+        colNetSalary.setCellValueFactory(new PropertyValueFactory<>("netSalary"));
+        colPaymentDate.setCellValueFactory(new PropertyValueFactory<>("paymentDate"));
+        colEmployeeId.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
 
+        try {
+            resetPage();
             txtBasicSalary.setOnKeyReleased(this::setSalary);
             txtBonus.setOnKeyReleased(this::setSalary);
             setNetSalary();
@@ -246,21 +241,15 @@ void btnDeleteOnAction(ActionEvent event) {
 
 
     private void loadEmployeeIds() throws SQLException, ClassNotFoundException {
-        ArrayList<String> employeeIds = employeeModel.getAllEmployeeIds();
+        ArrayList<String> employeeIds = (ArrayList<String>) salaryDAO.getAllEmployeeIds();
         ObservableList<String> observableOrderIds = FXCollections.observableArrayList(employeeIds);
         cmbEmployeeId.setItems(observableOrderIds);
     }
 
     private void loadTable() {
-        colSalaryId.setCellValueFactory(new PropertyValueFactory<>("salaryId"));
-        colBasicSalary.setCellValueFactory(new PropertyValueFactory<>("basicSalary"));
-        colBonus.setCellValueFactory(new PropertyValueFactory<>("bonus"));
-        colNetSalary.setCellValueFactory(new PropertyValueFactory<>("netSalary"));
-        colPaymentDate.setCellValueFactory(new PropertyValueFactory<>("paymentDate"));
-        colEmployeeId.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
 
         try {
-            ArrayList<SalaryDto> salary = salaryModel.getAllSalary();
+            ArrayList<SalaryDto> salary = (ArrayList<SalaryDto>) salaryDAO.getAllSalary();
             if (salary != null && !salary.isEmpty()) {
                 ObservableList<SalaryDto> salaryList = FXCollections.observableArrayList(salary);
                 tblSalary.setItems(salaryList);
@@ -274,11 +263,14 @@ void btnDeleteOnAction(ActionEvent event) {
     }
 
     private void loadNextId() throws SQLException, ClassNotFoundException {
-        lblId.setText(salaryModel.getNextId());
+        String nextId = salaryBO.getNextId();
+        lblId.setText(nextId);
     }
 
     private void resetPage() throws SQLException, ClassNotFoundException {
         loadNextId();
+        loadEmployeeIds();
+        loadTable();
         txtBasicSalary.clear();
         txtBonus.clear();
         setNetSalary();

@@ -1,6 +1,5 @@
 package lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl;
 
-import lk.ijse.javafx.bakerymanagementsystem.Dto.ExpensesDto;
 import lk.ijse.javafx.bakerymanagementsystem.dao.SQLUtil;
 import lk.ijse.javafx.bakerymanagementsystem.dao.custom.ExpensesDAO;
 import lk.ijse.javafx.bakerymanagementsystem.entity.Expenses;
@@ -30,12 +29,12 @@ public class ExpensesDAOImpl implements ExpensesDAO {
     }
 
     @Override
-    public String getLastId() throws SQLException, ClassNotFoundException {
+    public Optional<String> getLastId() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT expenses_id FROM employee ORDER BY expenses_id DESC LIMIT 1");
         if (resultSet.next()) {
-            return resultSet.getString(1);
+            return Optional.ofNullable(resultSet.getString(1));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

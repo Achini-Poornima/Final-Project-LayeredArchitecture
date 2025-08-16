@@ -19,7 +19,6 @@ import lk.ijse.javafx.bakerymanagementsystem.bo.custom.impl.EmployeeBOImpl;
 import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
 import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
 import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
-import lk.ijse.javafx.bakerymanagementsystem.model.EmployeeModel;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -49,7 +48,6 @@ public class EmployeeController implements Initializable {
     public TextField txtRole;
 
     private final EmployeeBO employeeBO = BOFactory.getInstance().getBo(BOTypes.EMPLOYEE);
-    private final EmployeeModel employeeModel = new EmployeeModel();
     private final String contactPattern = "^[0-9]{10}$";
     private final String emailPattern = "^[\\w!#$%&'*+/=?{|}~^-]+(?:\\.[\\w!#$%&'*+/=?{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$";
 
@@ -193,7 +191,8 @@ public class EmployeeController implements Initializable {
     }
 
     private void loadNextId() throws SQLException, ClassNotFoundException {
-        lblId.setText(employeeModel.getNextId());
+        String nextId = lblId.getText();
+        lblId.setText(nextId);
 
     }
 

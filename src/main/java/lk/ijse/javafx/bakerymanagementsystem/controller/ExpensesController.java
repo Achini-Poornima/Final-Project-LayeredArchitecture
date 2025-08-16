@@ -15,7 +15,9 @@ import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.ExpensesTM;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
 import lk.ijse.javafx.bakerymanagementsystem.bo.custom.ExpensesBO;
-import lk.ijse.javafx.bakerymanagementsystem.model.ExpensesModel;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -32,19 +34,18 @@ public class ExpensesController implements Initializable {
     public TableColumn<ExpensesTM, LocalDate> colDate;
     public TableColumn<ExpensesTM, String> colExpensesId;
     public Label lblId;
-    public TableView<ExpensesDto> tblExpenses;
+    public TableView<ExpensesTM> tblExpenses;
     public TextField txtAmount;
     public TextField txtCategory;
     public DatePicker txtDate;
 
     private final ExpensesBO expensesBO = BOFactory.getInstance().getBo(BOTypes.EXPENSES);
-    ExpensesModel expensesModel = new ExpensesModel();
 
     private final String amountPattern = "^\\\\d+(\\\\.\\\\d{1,2})?$\n";
 
     @FXML
     void btnDeleteOnAction(ActionEvent event) {
-        ExpensesDto expensesDto = tblExpenses.getSelectionModel().getSelectedItem();
+        ExpensesTM expensesDto = tblExpenses.getSelectionModel().getSelectedItem();
         if (expensesDto == null) {
             new Alert(Alert.AlertType.WARNING, "Please select a Expenses to delete.").show();
             return;
@@ -57,18 +58,19 @@ public class ExpensesController implements Initializable {
         Optional<ButtonType> result = confirmationAlert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                boolean isDeleted = expensesModel.deleteExpenses(expensesDto.getExpensesId());
+                String expensesId = lblId.getText();
+                boolean isDeleted = expensesBO.deleteExpenses(expensesId);
                 if (isDeleted) {
                     new Alert(Alert.AlertType.INFORMATION, "Expenses deleted successfully!").show();
-                    loadTable();
                     resetPage();
-                    loadNextId();
                 } else {
                     new Alert(Alert.AlertType.WARNING, "Failed to delete Expenses!").show();
                 }
-            } catch (SQLException | ClassNotFoundException e) {
+            } catch (InUseException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+            } catch (Exception e) {
                 e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+                new Alert(Alert.AlertType.ERROR, "Fail to delete customer..!").show();
             }
         }
     }
@@ -89,22 +91,15 @@ public class ExpensesController implements Initializable {
 
         ExpensesDto expensesDto = createExpensesDtoFromInputs();
         try {
-            boolean isAdded = expensesModel.saveExpenses(expensesDto);
-            if (isAdded){
-                new  Alert(Alert.AlertType.INFORMATION,"Expenses Added Successfully.").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            }else {
-                new Alert(Alert.AlertType.WARNING,"Failed save Expenses.").show();
-            }
-        }catch (SQLIntegrityConstraintViolationException e) {
-            new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-        } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+            expensesBO.saveExpenses(expensesDto);
+            new  Alert(Alert.AlertType.INFORMATION,"Expenses Added Successfully.").show();
+            resetPage();
+        } catch (DuplicateException e) {
+            System.out.println(e.getMessage());
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while adding the user!").show();
+            new Alert(Alert.AlertType.ERROR, "Fail to save customer..!").show();
         }
     }
 
@@ -114,22 +109,14 @@ public class ExpensesController implements Initializable {
 
         ExpensesDto expensesDto = createExpensesDtoFromInputs();
         try {
-            boolean isUpdated = expensesModel.updateExpenses(expensesDto);
-            if (isUpdated){
-                new  Alert(Alert.AlertType.INFORMATION,"Expenses Updated Successfully.").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            }else {
-                new Alert(Alert.AlertType.WARNING,"Failed Update Expenses.").show();
-            }
-        }catch (SQLIntegrityConstraintViolationException e) {
-            new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-        } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+            expensesBO.updateExpenses(expensesDto);
+            new  Alert(Alert.AlertType.INFORMATION,"Expenses Updated Successfully.").show();
+            resetPage();
+        } catch (NotFoundException | DuplicateException e) {
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while adding the user!").show();
+            new Alert(Alert.AlertType.ERROR, "Fail to update customer..!").show();
         }
     }
 
@@ -173,7 +160,7 @@ public class ExpensesController implements Initializable {
 
     @FXML
     void onSetData(MouseEvent event) {
-        ExpensesDto expensesDto = tblExpenses.getSelectionModel().getSelectedItem();
+        ExpensesTM expensesDto = tblExpenses.getSelectionModel().getSelectedItem();
         if (expensesDto != null) {
             lblId.setText(expensesDto.getExpensesId());
             txtCategory.setText(expensesDto.getCategory());
@@ -184,6 +171,11 @@ public class ExpensesController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        colExpensesId.setCellValueFactory(new PropertyValueFactory<>("expensesId"));
+        colCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
+        colAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+
         try {
             loadNextId();
             loadTable();
@@ -195,33 +187,28 @@ public class ExpensesController implements Initializable {
     }
 
     private void loadTable() throws SQLException, ClassNotFoundException {
-        colExpensesId.setCellValueFactory(new PropertyValueFactory<>("expensesId"));
-        colCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
-        colAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
-        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+        tblExpenses.setItems(FXCollections.observableArrayList(
+                expensesBO.getAllExpenses().stream().map(expensesDto ->
+                        new ExpensesTM(
+                                expensesDto.getExpensesId(),
+                                expensesDto.getCategory(),
+                                expensesDto.getAmount(),
+                                expensesDto.getDate()
+                        )).toList()
+        ));
 
-        try {
-            ArrayList<ExpensesDto> expenses = expensesModel.getAllExpenses();
-            if (expenses != null && !expenses.isEmpty()) {
-                ObservableList<ExpensesDto> expensesDtos = FXCollections.observableArrayList(expenses);
-                tblExpenses.setItems(expensesDtos);
-            } else {
-                tblExpenses.setItems(FXCollections.observableArrayList());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Failed to load deliver.").show();
-        }
     }
 
     private void resetPage() throws SQLException, ClassNotFoundException {
         loadNextId();
+        loadTable();
         txtAmount.clear();
         txtCategory.clear();
         txtDate.setValue(null);
     }
 
     private void loadNextId() throws SQLException, ClassNotFoundException {
-        lblId.setText(expensesModel.getNextId());
+        String nextId = expensesBO.getNextId();
+        lblId.setText(nextId);
     }
 }

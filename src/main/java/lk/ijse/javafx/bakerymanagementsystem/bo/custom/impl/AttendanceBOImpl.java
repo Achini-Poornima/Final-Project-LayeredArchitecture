@@ -68,7 +68,7 @@ public class AttendanceBOImpl implements AttendanceBO {
 
     @Override
     public String getNextId() throws SQLException, ClassNotFoundException {
-        String lastId = attendanceDAO.getLastId();
+        String lastId = String.valueOf(attendanceDAO.getLastId());
         char tableChar = 'A';
         if (lastId != null) {
             String lastIdNumberString = lastId.substring(1);

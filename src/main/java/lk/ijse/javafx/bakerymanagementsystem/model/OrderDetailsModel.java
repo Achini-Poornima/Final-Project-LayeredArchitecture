@@ -1,3 +1,4 @@
+/*
 package lk.ijse.javafx.bakerymanagementsystem.model;
 
 import lk.ijse.javafx.bakerymanagementsystem.Dto.OrderDetailsDto;
@@ -28,3 +29,4 @@ public class OrderDetailsModel {
         return SQLUtil.execute(sql,orderDetailsDTO.getOrderId(),orderDetailsDTO.getProductId(),orderDetailsDTO.getQuantity(),orderDetailsDTO.getPrice());
 
     }}
+*/

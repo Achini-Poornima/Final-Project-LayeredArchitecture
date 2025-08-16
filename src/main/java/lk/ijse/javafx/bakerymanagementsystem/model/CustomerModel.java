@@ -1,4 +1,3 @@
-/*
 package lk.ijse.javafx.bakerymanagementsystem.model;
 
 import lk.ijse.javafx.bakerymanagementsystem.Dto.CustomerDto;
@@ -95,4 +94,3 @@ public class CustomerModel {
         return "";
     }
 }
-*/

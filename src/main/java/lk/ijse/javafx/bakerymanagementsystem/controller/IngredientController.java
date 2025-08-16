@@ -1,7 +1,6 @@
 package lk.ijse.javafx.bakerymanagementsystem.controller;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -10,13 +9,16 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
-import lk.ijse.javafx.bakerymanagementsystem.Dto.DeliverDto;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.IngredientDto;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.IngredientTM;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
 import lk.ijse.javafx.bakerymanagementsystem.bo.custom.IngredientBO;
-import lk.ijse.javafx.bakerymanagementsystem.model.IngredientModel;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.IngredientDAO;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl.IngredientDAOImpl;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -33,18 +35,19 @@ public class IngredientController implements Initializable {
     public TableColumn<IngredientTM, Double> colQuantityAvailable;
     public TableColumn<IngredientTM, String> colSupplierId;
     public Label lblId;
-    public TableView<IngredientDto> tblIngredient;
+    public TableView<IngredientTM> tblIngredient;
     public DatePicker txtExpierDate;
     public TextField txtName;
     public TextField txtQuantityAvailable;
     public ComboBox<String> txtSupplierId;
 
+    private final IngredientDAO ingredientDAO = new IngredientDAOImpl();
     private final IngredientBO ingredientBO = BOFactory.getInstance().getBo(BOTypes.INGREDIENT);
-    private final IngredientModel ingredientModel = new IngredientModel();
+//    private final IngredientModel ingredientModel = new IngredientModel();
 
     @FXML
     void btnDeleteOnAction(ActionEvent event) {
-        IngredientDto selectedIngredient = tblIngredient.getSelectionModel().getSelectedItem();
+        IngredientTM selectedIngredient = tblIngredient.getSelectionModel().getSelectedItem();
         if (selectedIngredient == null) {
             new Alert(Alert.AlertType.WARNING, "Please select an ingredient to delete").show();
             return;
@@ -55,23 +58,21 @@ public class IngredientController implements Initializable {
 
         Optional<ButtonType> result = confirmationAlert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-
-            try {
-                boolean isDeleted = ingredientModel.deleteIngredient(selectedIngredient.getIngredientId());
-                if (isDeleted) {
-                    new Alert(Alert.AlertType.INFORMATION, "Ingredient Deleted Successfully.").show();
-                    loadTable();
-                    resetPage();
-                    loadNextId();
-                } else {
-                    new Alert(Alert.AlertType.WARNING, "Failed to delete Ingredient.").show();
+             try {
+                    String id = lblId.getText();
+                    boolean isDeleted = ingredientBO.deleteIngredient(id);
+                    if (isDeleted) {
+                        new Alert(Alert.AlertType.INFORMATION, "Ingredient deleted successfully!").show();
+                        resetPage();
+                    } else {
+                        new Alert(Alert.AlertType.WARNING, "Failed to delete Ingredient!").show();
+                    }
+                } catch (InUseException e) {
+                    new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    new Alert(Alert.AlertType.ERROR, "Fail to delete Ingredient..!").show();
                 }
-            } catch (SQLException e) {
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while deleting the ingredient!").show();
-            }
         }
     }
 
@@ -86,22 +87,15 @@ public class IngredientController implements Initializable {
 
         IngredientDto ingredientDto = createDeliverDtoFromInputs();
         try {
-            boolean isAdded = ingredientModel.saveIngredient(ingredientDto);
-            if (isAdded){
-                new  Alert(Alert.AlertType.INFORMATION,"Ingredient Added Successfully.").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            }else {
-                new Alert(Alert.AlertType.WARNING,"Failed save Ingredient.").show();
-            }
-        }catch (SQLIntegrityConstraintViolationException e) {
-            new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-        } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+            ingredientBO.saveIngredient(ingredientDto);
+            resetPage();
+            new Alert(Alert.AlertType.INFORMATION, "Ingredient saved successfully.").show();
+        } catch (DuplicateException e) {
+            System.out.println(e.getMessage());
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while adding the user!").show();
+            new Alert(Alert.AlertType.ERROR, "Fail to save ingredient..!").show();
         }
     }
 
@@ -111,22 +105,14 @@ public class IngredientController implements Initializable {
 
         IngredientDto ingredientDto = createDeliverDtoFromInputs();
         try {
-            boolean isUpdated = ingredientModel.updateIngredient(ingredientDto);
-            if (isUpdated){
-                new  Alert(Alert.AlertType.INFORMATION,"Ingredient Updated Successfully.").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            }else {
-                new Alert(Alert.AlertType.WARNING,"Failed Update Ingredient.").show();
-            }
-        }catch (SQLIntegrityConstraintViolationException e) {
-            new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-        } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+            ingredientBO.updateIngredient(ingredientDto);
+            new Alert(Alert.AlertType.INFORMATION, "Ingredient updated successfully!").show();
+            resetPage();
+        } catch (NotFoundException | DuplicateException e) {
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while adding the user!").show();
+            new Alert(Alert.AlertType.ERROR, "Fail to update ingredient..!").show();
         }
     }
 
@@ -194,7 +180,7 @@ public class IngredientController implements Initializable {
 
     @FXML
     void onSetData(MouseEvent event) {
-        IngredientDto selectedIngredient = tblIngredient.getSelectionModel().getSelectedItem();
+        IngredientTM selectedIngredient = tblIngredient.getSelectionModel().getSelectedItem();
         if (selectedIngredient != null) {
             lblId.setText(selectedIngredient.getIngredientId());
             txtName.setText(selectedIngredient.getName());
@@ -206,18 +192,6 @@ public class IngredientController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        try {
-            loadNextId();
-            loadTable();
-            resetPage();
-            loadSupplierIds();
-        }catch (Exception e){
-            e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR,"Failed To load Table..").show();
-        }
-    }
-
-    private void loadTable() {
         colIngredientId.setCellValueFactory(new PropertyValueFactory<>("ingredientId"));
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colExpireDate.setCellValueFactory(new PropertyValueFactory<>("expireDate"));
@@ -225,25 +199,34 @@ public class IngredientController implements Initializable {
         colSupplierId.setCellValueFactory(new PropertyValueFactory<>("supplierId"));
 
         try {
-            ArrayList<IngredientDto> deliver = IngredientModel.getAllDelivers();
-            if (deliver != null && !deliver.isEmpty()) {
-                ObservableList<IngredientDto> IngredientList = FXCollections.observableArrayList(deliver);
-                tblIngredient.setItems(IngredientList);
-            } else {
-                tblIngredient.setItems(FXCollections.observableArrayList());
-            }
-        } catch (Exception e) {
+            resetPage();
+        }catch (Exception e){
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Failed to load Ingredient.").show();
+            new Alert(Alert.AlertType.ERROR,"Failed To load Table..").show();
         }
     }
 
+    private void loadTable() throws SQLException, ClassNotFoundException {
+        tblIngredient.setItems(FXCollections.observableArrayList(
+                ingredientBO.getAllIngredient().stream().map(ingredientDTO ->
+                        new IngredientTM(
+                                ingredientDTO.getIngredientId(),
+                                ingredientDTO.getName(),
+                                ingredientDTO.getExpireDate(),
+                                ingredientDTO.getQuantityAvailable(),
+                                ingredientDTO.getSupplierId()
+                        )).toList()
+        ));
+    }
+
     private void loadSupplierIds() throws SQLException, ClassNotFoundException {
-        txtSupplierId.setItems(FXCollections.observableArrayList(ingredientModel.getAllSupplierIds()));
+        txtSupplierId.setItems(FXCollections.observableArrayList(ingredientDAO.getAllSupplierIds()));
     }
 
     private void resetPage() throws SQLException, ClassNotFoundException {
         loadNextId();
+        loadNextId();
+        loadSupplierIds();
         txtExpierDate.setValue(null);
         txtName.clear();
         txtQuantityAvailable.clear();
@@ -251,6 +234,7 @@ public class IngredientController implements Initializable {
     }
 
     private void loadNextId() throws SQLException, ClassNotFoundException {
-        lblId.setText(ingredientModel.getNextId());
+        String nextId = ingredientBO.getNextId();
+        lblId.setText(new String(nextId));
     }
 }

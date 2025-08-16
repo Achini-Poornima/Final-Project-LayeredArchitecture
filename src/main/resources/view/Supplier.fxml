@@ -43,7 +43,7 @@
             <HBox spacing="10.0">
                <children>
                   <Label prefHeight="34.0" prefWidth="158.0" text="     Address" />
-                  <TextField fx:id="txtaddress" prefHeight="35.0" prefWidth="376.0" promptText="Address" style="-fx-border-color: #0984e3; -fx-background-color: #dfe6e9; -fx-border-width: 0 0 2 0;" />
+                  <TextField fx:id="txtAddress" prefHeight="35.0" prefWidth="376.0" promptText="Address" style="-fx-border-color: #0984e3; -fx-background-color: #dfe6e9; -fx-border-width: 0 0 2 0;" />
                </children>
             </HBox>
             <HBox spacing="10.0">

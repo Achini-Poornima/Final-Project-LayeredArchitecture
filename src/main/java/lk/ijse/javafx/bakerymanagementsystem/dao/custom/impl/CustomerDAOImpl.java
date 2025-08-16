@@ -31,12 +31,12 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public String getLastId() throws SQLException, ClassNotFoundException {
+    public Optional<String> getLastId() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT customer_id FROM customer ORDER BY customer_id DESC LIMIT 1");
         if (resultSet.next()) {
-            return resultSet.getString(1);
+            return Optional.ofNullable(resultSet.getString(1));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

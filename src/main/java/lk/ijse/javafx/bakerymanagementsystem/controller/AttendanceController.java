@@ -18,9 +18,8 @@ import lk.ijse.javafx.bakerymanagementsystem.bo.custom.impl.AttendanceBOImpl;
 import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
 import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
 import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
-import lk.ijse.javafx.bakerymanagementsystem.entity.Attendance;
-//import lk.ijse.javafx.bakerymanagementsystem.model.AttendanceModel;
-import lk.ijse.javafx.bakerymanagementsystem.model.EmployeeModel;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.AttendanceDAO;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl.AttendanceDAOImpl;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -49,9 +48,8 @@ public class AttendanceController implements Initializable {
     public TextField txtOutTimeHour;
     public TextField txtOutTimeMin;
     
-//    private final AttendanceModel attendanceModel = new AttendanceModel();
-    private final EmployeeModel employeeModel = new EmployeeModel();
     private final AttendanceBO attendanceBO = new AttendanceBOImpl();
+    private final AttendanceDAO attendanceDAO = new AttendanceDAOImpl();
 
     @FXML
     void btnDeleteOnAction(ActionEvent event) {
@@ -244,7 +242,7 @@ public class AttendanceController implements Initializable {
     }
 
     private void loadEmployeeIds() throws SQLException, ClassNotFoundException {
-        ArrayList<String> employeeIds = employeeModel.getAllEmployeeIds();
+        ArrayList<String> employeeIds = (ArrayList<String>) attendanceDAO.getAllEmployeeIds();
         ObservableList<String> observableOrderIds = FXCollections.observableArrayList(employeeIds);
         cmbEmployeeId.setItems(observableOrderIds);
     }

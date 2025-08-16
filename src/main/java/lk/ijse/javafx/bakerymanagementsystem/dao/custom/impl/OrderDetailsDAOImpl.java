@@ -15,8 +15,8 @@ public class OrderDetailsDAOImpl implements OrderDetailsDAO {
     }
 
     @Override
-    public String getLastId() {
-        return null;
+    public Optional<String> getLastId() {
+        return Optional.empty();
     }
 
     @Override

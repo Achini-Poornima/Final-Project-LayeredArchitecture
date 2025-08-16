@@ -1,6 +1,5 @@
 package lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl;
 
-import lk.ijse.javafx.bakerymanagementsystem.Dto.IngredientDto;
 import lk.ijse.javafx.bakerymanagementsystem.dao.SQLUtil;
 import lk.ijse.javafx.bakerymanagementsystem.dao.custom.IngredientDAO;
 import lk.ijse.javafx.bakerymanagementsystem.entity.Ingredient;
@@ -30,12 +29,12 @@ public class IngredientDAOImpl implements IngredientDAO {
     }
 
     @Override
-    public String getLastId() throws SQLException, ClassNotFoundException {
+    public Optional<String> getLastId() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT ingredient_id FROM ingredient ORDER BY ingredient_id DESC LIMIT 1");
         if (resultSet.next()) {
-            return resultSet.getString(1);
+            return Optional.ofNullable(resultSet.getString(1));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -69,5 +68,15 @@ public class IngredientDAOImpl implements IngredientDAO {
     @Override
     public Optional<Ingredient> findById(String id) {
         return null;
+    }
+
+    @Override
+    public List<String> getAllSupplierIds() throws SQLException, ClassNotFoundException {
+        ArrayList<String> supplierIds = new ArrayList<>();
+        ResultSet rs = SQLUtil.execute("SELECT supplier_id FROM Supplier");
+        while (rs.next()) {
+            supplierIds.add(rs.getString("supplier_id"));
+        }
+        return supplierIds;
     }
 }

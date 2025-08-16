@@ -1,11 +1,12 @@
 package lk.ijse.javafx.bakerymanagementsystem.bo.custom;
 
 import lk.ijse.javafx.bakerymanagementsystem.Dto.AttendanceDto;
+import lk.ijse.javafx.bakerymanagementsystem.bo.SuperBO;
 
 import java.sql.SQLException;
 import java.util.List;
 
-public interface AttendanceBO {
+public interface AttendanceBO extends SuperBO {
     List<AttendanceDto> getAllAttendance() throws SQLException, ClassNotFoundException;
     void saveAttendance(AttendanceDto dto) throws SQLException, ClassNotFoundException;
     void updateAttendance(AttendanceDto dto) throws SQLException, ClassNotFoundException;

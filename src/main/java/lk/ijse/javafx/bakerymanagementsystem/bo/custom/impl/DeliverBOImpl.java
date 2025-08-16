@@ -67,7 +67,7 @@ public class DeliverBOImpl implements DeliverBO {
 
     @Override
     public String getNextId() throws SQLException, ClassNotFoundException {
-        String lastId = deliverDAO.getLastId();
+        String lastId = String.valueOf(deliverDAO.getLastId());
         char tableChar = 'D';
         if (lastId != null) {
             String lastIdNumberString = lastId.substring(1);
@@ -78,8 +78,4 @@ public class DeliverBOImpl implements DeliverBO {
         return tableChar + "001";
     }
 
-    @Override
-    public List<String> getTodayOrderIds(String deliverId) {
-        return List.of();
-    }
 }

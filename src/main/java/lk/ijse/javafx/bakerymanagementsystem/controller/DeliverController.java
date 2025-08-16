@@ -1,4 +1,3 @@
-/*
 package lk.ijse.javafx.bakerymanagementsystem.controller;
 
 import javafx.collections.FXCollections;
@@ -19,6 +18,8 @@ import lk.ijse.javafx.bakerymanagementsystem.bo.custom.DeliverBO;
 import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
 import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
 import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.DeliverDAO;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl.DeliverDAOImpl;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -52,6 +53,7 @@ public class DeliverController implements Initializable {
 
     public ComboBox<String> txtOrderId;
 
+    private final DeliverDAO deliverDAO = new DeliverDAOImpl();
     private final DeliverBO deliverBO = BOFactory.getInstance().getBo(BOTypes.DELIVER);
 
     @FXML
@@ -200,26 +202,23 @@ public class DeliverController implements Initializable {
         colOrderId.setCellValueFactory(new PropertyValueFactory<>("orderId"));
 
         try {
-              loadNextId();
-              loadTable();
               resetPage();
-              loadTodayOrderIds();
           }catch (Exception e){
               e.printStackTrace();
               new Alert(Alert.AlertType.ERROR,"Failed To load Table..").show();
           }
     }
 
-    private void loadTodayOrderIds() {
+    /*private void loadTodayOrderIds() {
         try {
-            ArrayList<String> orderIds = new ArrayList<>(deliverBO.getTodayOrderIds());
+            ArrayList<String> orderIds = new ArrayList<>(deliverDAO.getTodayOrderIds());
             ObservableList<String> observableOrderIds = FXCollections.observableArrayList(orderIds);
             txtOrderId.setItems(observableOrderIds);
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
             new Alert(Alert.AlertType.ERROR, "Failed to load today's order IDs.").show();
         }
-    }
+    }*/
 
 
     private void loadTable() throws SQLException, ClassNotFoundException {
@@ -238,6 +237,7 @@ public class DeliverController implements Initializable {
     private void resetPage() throws SQLException, ClassNotFoundException {
        loadNextId();
        loadTable();
+       /*loadTodayOrderIds();*/
        txtDeliverAddress.clear();
        txtDeliverCharge.clear();
        txtOrderId.setValue(null);
@@ -251,4 +251,3 @@ public class DeliverController implements Initializable {
 }
 
 
-*/

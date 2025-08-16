@@ -1,10 +1,10 @@
 package lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl;
 
-import lk.ijse.javafx.bakerymanagementsystem.Dto.UserDto;
 import lk.ijse.javafx.bakerymanagementsystem.dao.SQLUtil;
 import lk.ijse.javafx.bakerymanagementsystem.dao.custom.UserDAO;
 import lk.ijse.javafx.bakerymanagementsystem.entity.User;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,12 +29,12 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public String getLastId() throws SQLException, ClassNotFoundException {
+    public Optional<String> getLastId() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1");
         if (resultSet.next()) {
-            return resultSet.getString(1);
+            return Optional.ofNullable(resultSet.getString(1));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -66,13 +66,25 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public List<String> getAllIds() {
-        return null;
+        return List.of();
     }
 
     @Override
-    public Optional<User> findById(String id) {
-        return null;
+    public Optional<User> findById(String id) throws SQLException, ClassNotFoundException {
+        ResultSet rst = SQLUtil.execute("SELECT * FROM users WHERE user_id=?", id);
+
+        if (rst.next()) {
+            User user = new User(
+                    rst.getString("user_id"),
+                    rst.getString("user_name"),
+                    rst.getString("password"),
+                    rst.getString("role")
+            );
+            return Optional.of(user);
+        }
+        return Optional.empty();
     }
+
 
     @Override
     public boolean checkLogin(String username, String password) throws SQLException, ClassNotFoundException {

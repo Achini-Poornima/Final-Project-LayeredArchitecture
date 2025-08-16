@@ -86,7 +86,7 @@ public class EntityDTOConverter {
         return dto;
     }
 
-    public ProductDto getProductDTO(Product product) {
+    public ProductDto getProductDto(Product product) {
         ProductDto dto = new ProductDto();
         dto.setProductId(product.getProductId());
         dto.setName(product.getName());
@@ -247,4 +247,5 @@ public class EntityDTOConverter {
         user.setRole(dto.getRole());
         return user;
     }
+
 }

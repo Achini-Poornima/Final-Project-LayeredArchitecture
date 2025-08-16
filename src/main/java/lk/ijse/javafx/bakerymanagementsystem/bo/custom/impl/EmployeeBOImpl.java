@@ -67,7 +67,7 @@ public class EmployeeBOImpl implements EmployeeBO {
 
     @Override
     public String getNextId() throws SQLException, ClassNotFoundException {
-        String lastId = employeeDAO.getLastId();
+        String lastId = String.valueOf(employeeDAO.getLastId());
         char tableChar = 'E';
         if (lastId != null) {
             String lastIdNumberString = lastId.substring(1);

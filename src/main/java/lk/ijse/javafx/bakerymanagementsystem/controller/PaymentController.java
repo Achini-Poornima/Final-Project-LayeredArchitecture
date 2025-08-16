@@ -9,12 +9,19 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.StageStyle;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.DeliverDto;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.PaymentDto;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.CustomerTM;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.PaymentTM;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
 import lk.ijse.javafx.bakerymanagementsystem.bo.custom.PaymentBO;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.PaymentDAO;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl.PaymentDAOImpl;
 import lk.ijse.javafx.bakerymanagementsystem.model.PaymentModel;
 
 import java.net.URL;
@@ -23,6 +30,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class PaymentController implements Initializable {
@@ -33,30 +41,44 @@ public class PaymentController implements Initializable {
     public TableColumn<PaymentTM,String> colPaymentDate;
     public TableColumn<PaymentTM,String> colPaymentMethod;
     public Label lblId;
-    public TableView<PaymentDto> tblPayment;
+    public TableView<PaymentTM> tblPayment;
     public TextField txtAmount;
     public ComboBox<String> txtOrderId;
     public DatePicker txtPaymentDate;
     public TextField txtPaymentMethod;
 
+    private final PaymentDAO paymentDAO = new PaymentDAOImpl();
     private final PaymentBO paymentBO = BOFactory.getInstance().getBo(BOTypes.PAYMENT);
     PaymentModel paymentModel = new PaymentModel();
 
     @FXML
     void btnDeleteOnAction(ActionEvent event) throws SQLException, ClassNotFoundException {
-        PaymentDto selectedPayment = tblPayment.getSelectionModel().getSelectedItem();
+        PaymentTM selectedPayment = tblPayment.getSelectionModel().getSelectedItem();
         if (selectedPayment == null) {
             new Alert(Alert.AlertType.WARNING, "Please select a payment to delete.").show();
             return;
         }
+        Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationAlert.initStyle(StageStyle.UNDECORATED);
+        confirmationAlert.setContentText("Are you sure you want to delete this Payment?");
+        Optional<ButtonType> result = confirmationAlert.showAndWait();
 
-        boolean isDeleted = paymentModel.deletePayment(selectedPayment);
-        if (isDeleted) {
-            new Alert(Alert.AlertType.INFORMATION, "Payment deleted successfully.").show();
-            loadTable();
-            resetPage();
-        } else {
-            new Alert(Alert.AlertType.WARNING, "Failed to delete payment.").show();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                String id = lblId.getText();
+                boolean isDeleted = paymentBO.deletePayment(id);
+                if (isDeleted) {
+                    new Alert(Alert.AlertType.INFORMATION, "Payment deleted successfully!").show();
+                    resetPage();
+                } else {
+                    new Alert(Alert.AlertType.WARNING, "Failed to delete Payment!").show();
+                }
+            } catch (InUseException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                new Alert(Alert.AlertType.ERROR, "Fail to delete payment..!").show();
+            }
         }
     }
 
@@ -71,22 +93,15 @@ public class PaymentController implements Initializable {
 
         PaymentDto paymentDto = createDeliverDtoFromInputs();
         try {
-            boolean isAdded = paymentModel.savePayment(paymentDto);
-            if (isAdded){
-                new  Alert(Alert.AlertType.INFORMATION,"Payment Added Successfully.").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            }else {
-                new Alert(Alert.AlertType.WARNING,"Failed save Payment.").show();
-            }
-        }catch (SQLIntegrityConstraintViolationException e) {
-            new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-        } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+            paymentBO.savePayment(paymentDto);
+            resetPage();
+            new Alert(Alert.AlertType.INFORMATION, "Payment saved successfully.").show();
+        } catch (DuplicateException e) {
+            System.out.println(e.getMessage());
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while adding the user!").show();
+            new Alert(Alert.AlertType.ERROR, "Fail to save payment..!").show();
         }
     }
 
@@ -96,22 +111,14 @@ public class PaymentController implements Initializable {
 
         PaymentDto paymentDto = createDeliverDtoFromInputs();
         try {
-            boolean isUpdate = paymentModel.updatePayment(paymentDto);
-            if (isUpdate){
-                new  Alert(Alert.AlertType.INFORMATION,"Payment update Successfully.").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            }else {
-                new Alert(Alert.AlertType.WARNING,"Failed update Payment.").show();
-            }
-        }catch (SQLIntegrityConstraintViolationException e) {
-            new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-        } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+            paymentBO.updatePayment(paymentDto);
+            new Alert(Alert.AlertType.INFORMATION, "Payment updated successfully!").show();
+            resetPage();
+        } catch (NotFoundException | DuplicateException e) {
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while adding the user!").show();
+            new Alert(Alert.AlertType.ERROR, "Fail to update payment..!").show();
         }
     }
 
@@ -161,7 +168,7 @@ public class PaymentController implements Initializable {
 
     @FXML
     void onSetData(MouseEvent event) {
-        PaymentDto selectedPayment = tblPayment.getSelectionModel().getSelectedItem();
+        PaymentTM selectedPayment = tblPayment.getSelectionModel().getSelectedItem();
         if (selectedPayment != null) {
             lblId.setText(selectedPayment.getPaymentId());
             txtAmount.setText(String.valueOf(selectedPayment.getAmount()));
@@ -173,18 +180,6 @@ public class PaymentController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        try {
-            loadNextId();
-            loadTable();
-            resetPage();
-            loadTodayOrderIds();
-        }catch (Exception e){
-            e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR,"Failed To load Table..").show();
-        }
-    }
-
-    private void loadTable() {
         colPaymentId.setCellValueFactory(new PropertyValueFactory<>("paymentId"));
         colAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
         colPaymentMethod.setCellValueFactory(new PropertyValueFactory<>("paymentMethod"));
@@ -192,17 +187,24 @@ public class PaymentController implements Initializable {
         colOrderId.setCellValueFactory(new PropertyValueFactory<>("orderId"));
 
         try {
-            ArrayList<PaymentDto> payment = PaymentModel.getAllPayments();
-            if (payment != null && !payment.isEmpty()) {
-                ObservableList<PaymentDto> paymentList = FXCollections.observableArrayList(payment);
-                tblPayment.setItems(paymentList);
-            } else {
-                tblPayment.setItems(FXCollections.observableArrayList());
-            }
-        } catch (Exception e) {
+            resetPage();
+        }catch (Exception e){
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Failed to load payment.").show();
+            new Alert(Alert.AlertType.ERROR,"Failed To load Table..").show();
         }
+    }
+
+    private void loadTable() throws SQLException, ClassNotFoundException {
+        tblPayment.setItems(FXCollections.observableArrayList(
+                paymentBO.getAllPayment().stream().map(paymentDTO ->
+                        new PaymentTM(
+                                paymentDTO.getPaymentId(),
+                                paymentDTO.getAmount(),
+                                paymentDTO.getPaymentMethod(),
+                                paymentDTO.getPaymentDate(),
+                                paymentDTO.getOrderId()
+                        )).toList()
+        ));
     }
 
 
@@ -219,6 +221,8 @@ public class PaymentController implements Initializable {
 
     private void resetPage() throws SQLException, ClassNotFoundException {
         loadNextId();
+        loadTable();
+        loadTodayOrderIds();
         txtAmount.clear();
         txtPaymentMethod.clear();
         txtPaymentDate.setValue(null);
@@ -228,6 +232,9 @@ public class PaymentController implements Initializable {
 
 
     private void loadNextId() throws SQLException, ClassNotFoundException {
-        lblId.setText(paymentModel.getNextPaymentId());
+        Optional<String> nextIdOpt = paymentBO.getNextId().describeConstable();
+        String nextId = nextIdOpt.orElse("P001");
+        lblId.setText(nextId);
     }
+
 }

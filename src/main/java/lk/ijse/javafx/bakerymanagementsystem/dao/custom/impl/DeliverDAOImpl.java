@@ -30,12 +30,12 @@ public class DeliverDAOImpl implements DeliverDAO {
     }
 
     @Override
-    public String getLastId() throws SQLException, ClassNotFoundException {
+    public Optional<String> getLastId() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT deliver_id FROM deliver ORDER BY deliver_id DESC LIMIT 1");
         if (resultSet.next()) {
-            return resultSet.getString(1);
+            return Optional.ofNullable(resultSet.getString(1));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -79,7 +79,7 @@ public class DeliverDAOImpl implements DeliverDAO {
     }
 
     @Override
-    public List<Deliver> getTodayOrderIds(String deliverId) throws SQLException, ClassNotFoundException {
+    public List<Deliver> getTodayOrderIds() throws SQLException, ClassNotFoundException {
         List<String> orderIds = new ArrayList<>();
         ResultSet rs = SQLUtil.execute("SELECT order_id FROM Orders WHERE DATE(order_date) = CURATE()");
         while (rs.next()) {

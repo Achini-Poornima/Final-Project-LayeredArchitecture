@@ -1,6 +1,5 @@
 package lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl;
 
-import lk.ijse.javafx.bakerymanagementsystem.Dto.PaymentDto;
 import lk.ijse.javafx.bakerymanagementsystem.dao.SQLUtil;
 import lk.ijse.javafx.bakerymanagementsystem.dao.custom.PaymentDAO;
 import lk.ijse.javafx.bakerymanagementsystem.entity.Payment;
@@ -30,12 +29,12 @@ public class PaymentDAOImpl implements PaymentDAO {
     }
 
     @Override
-    public String getLastId() throws SQLException, ClassNotFoundException {
+    public Optional<String> getLastId() throws SQLException, ClassNotFoundException {
         ResultSet resultSet = SQLUtil.execute("SELECT payment_id FROM payment ORDER BY payment_id DESC LIMIT 1");
         if (resultSet.next()) {
-            return resultSet.getString(1);
+            return Optional.ofNullable(resultSet.getString(1));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -58,12 +57,12 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public List<String> getAllIds() {
-        return null;
+        return List.of();
     }
 
     @Override
     public Optional<Payment> findById(String id) {
-        return null;
+        return Optional.empty();
     }
 
     @Override

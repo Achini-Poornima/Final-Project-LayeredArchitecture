@@ -16,5 +16,5 @@ public interface DeliverBO extends SuperBO {
 
     String getNextId() throws SQLException, ClassNotFoundException;
 
-    List<String> getTodayOrderIds(String deliverId);
+
 }

@@ -10,11 +10,17 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.StageStyle;
+import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.CustomerTM;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.TM.UserTM;
 import lk.ijse.javafx.bakerymanagementsystem.Dto.UserDto;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOFactory;
 import lk.ijse.javafx.bakerymanagementsystem.bo.BOTypes;
 import lk.ijse.javafx.bakerymanagementsystem.bo.custom.UserBO;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.DuplicateException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.InUseException;
+import lk.ijse.javafx.bakerymanagementsystem.bo.exception.NotFoundException;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.UserDAO;
+import lk.ijse.javafx.bakerymanagementsystem.dao.custom.impl.UserDAOImpl;
 import lk.ijse.javafx.bakerymanagementsystem.model.UserModel;
 
 import java.net.URL;
@@ -32,11 +38,12 @@ public class UserController implements Initializable {
     public TableColumn<UserTM, String> colRole;
     public TableColumn<UserTM, String> colId;
     public Label lblId;
-    public TableView<UserDto> tblUser;
+    public TableView<UserTM> tblUser;
     public TextField txtPassword;
     public TextField txtRole;
     public TextField txtUserName;
 
+    private final UserDAO userDAO = new UserDAOImpl();
     private final UserModel userModel = new UserModel();
     private final String usernamePattern = "^[a-zA-Z][a-zA-Z0-9_]{4,19}$";
     private final String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()\\-+])[A-Za-z\\d!@#$%^&*()\\-+]{8,}$";
@@ -44,9 +51,12 @@ public class UserController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        colId.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        coUserName.setCellValueFactory(new PropertyValueFactory<>("userName"));
+        colPassword.setCellValueFactory(new PropertyValueFactory<>("password"));
+        colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
+
         try {
-            loadNextId();
-            loadTable();
             resetPage();
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,22 +71,15 @@ public class UserController implements Initializable {
         UserDto userDto = createUserDtoFromInputs();
 
         try {
-            boolean isAdded = userModel.saveUser(userDto);
-            if (isAdded) {
-                new Alert(Alert.AlertType.INFORMATION, "User added successfully!").show();
-                loadTable();
-                resetPage();
-                loadNextId();
-            } else {
-                new Alert(Alert.AlertType.WARNING, "Failed to add User!").show();
-            }
-        } catch (SQLIntegrityConstraintViolationException e) {
-            new Alert(Alert.AlertType.ERROR, "Database Error: " + e.getMessage()).show();
-        } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+            userBO.saveUser(userDto);
+            resetPage();
+            new Alert(Alert.AlertType.INFORMATION, "Customer saved successfully.").show();
+        } catch (DuplicateException e) {
+            System.out.println(e.getMessage());
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Unexpected error occurred while adding the user!").show();
+            new Alert(Alert.AlertType.ERROR, "Fail to save user..!").show();
         }
     }
 
@@ -86,34 +89,22 @@ public class UserController implements Initializable {
 
         UserDto userDto = createUserDtoFromInputs();
 
-        Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmationAlert.initStyle(StageStyle.UNDECORATED);
-        confirmationAlert.setContentText("Are you sure you want to update this User?");
-
-        Optional<ButtonType> result = confirmationAlert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                boolean isUpdated = userModel.updateUser(userDto);
-                if (isUpdated) {
-                    new Alert(Alert.AlertType.INFORMATION, "User updated successfully!").show();
-                    loadTable();
-                    resetPage();
-                    loadNextId();
-                } else {
-                    new Alert(Alert.AlertType.WARNING, "Failed to update User!").show();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            userBO.updateUser(userDto);
+            new Alert(Alert.AlertType.INFORMATION, "User updated successfully!").show();
+            resetPage();
+        } catch (NotFoundException | DuplicateException e) {
+            new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "Fail to update user..!").show();
         }
+
     }
 
     @FXML
     void btnDeleteOnAction(ActionEvent event) {
-        UserDto selectedUser = tblUser.getSelectionModel().getSelectedItem();
+        UserTM selectedUser = tblUser.getSelectionModel().getSelectedItem();
         if (selectedUser == null) {
             new Alert(Alert.AlertType.WARNING, "Please select a user to delete.").show();
             return;
@@ -126,18 +117,20 @@ public class UserController implements Initializable {
         Optional<ButtonType> result = confirmationAlert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                boolean isDeleted = userModel.deleteUser(selectedUser.getUserId());
+                String id = selectedUser.getUserId();
+                boolean isDeleted = userBO.deleteUser(id);
+
                 if (isDeleted) {
                     new Alert(Alert.AlertType.INFORMATION, "User deleted successfully!").show();
-                    loadTable();
                     resetPage();
-                    loadNextId();
                 } else {
                     new Alert(Alert.AlertType.WARNING, "Failed to delete User!").show();
                 }
-            } catch (SQLException | ClassNotFoundException e) {
+            } catch (InUseException e) {
+                new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
+            } catch (Exception e) {
                 e.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "SQL Error: " + e.getMessage()).show();
+                new Alert(Alert.AlertType.ERROR, "Fail to delete user..!").show();
             }
         }
     }
@@ -152,7 +145,7 @@ public class UserController implements Initializable {
     }
 
     public void setDataOnMouseClicked(MouseEvent mouseEvent) {
-            UserDto userDto = tblUser.getSelectionModel().getSelectedItem();
+            UserTM userDto = tblUser.getSelectionModel().getSelectedItem();
             if (userDto != null) {
                 lblId.setText(userDto.getUserId());
                 txtUserName.setText(userDto.getUserName());
@@ -163,6 +156,7 @@ public class UserController implements Initializable {
 
     private void resetPage() throws SQLException, ClassNotFoundException {
         loadNextId();
+        loadTable();
         txtUserName.clear();
         txtPassword.clear();
         txtRole.clear();
@@ -170,27 +164,20 @@ public class UserController implements Initializable {
     }
 
     private void loadNextId() throws SQLException, ClassNotFoundException {
-        lblId.setText(userModel.getNextId());
+        String nextId = userBO.getNextId();
+        lblId.setText(nextId);
     }
 
-    private void loadTable() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("userId"));
-        coUserName.setCellValueFactory(new PropertyValueFactory<>("userName"));
-        colPassword.setCellValueFactory(new PropertyValueFactory<>("password"));
-        colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
-
-        try {
-            ArrayList<UserDto> users = userModel.getAllUsers();
-            if (users != null && !users.isEmpty()) {
-                ObservableList<UserDto> userList = FXCollections.observableArrayList(users);
-                tblUser.setItems(userList);
-            } else {
-                tblUser.setItems(FXCollections.observableArrayList());
-            }
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR, "Failed to load users.").show();
-        }
+    private void loadTable() throws SQLException, ClassNotFoundException {
+        tblUser.setItems(FXCollections.observableArrayList(
+                userBO.getAllUser().stream().map(UserDTO ->
+                        new UserTM(
+                                UserDTO.getUserId(),
+                                UserDTO.getUserName(),
+                                UserDTO.getPassword(),
+                                UserDTO.getRole()
+                        )).toList()
+        ));
     }
 
     private boolean validDateInputs() {

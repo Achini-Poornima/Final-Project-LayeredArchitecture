@@ -94,14 +94,18 @@ public class CustomerBOImpl implements CustomerBO {
 
     @Override
     public String getNextId() throws SQLException, ClassNotFoundException {
-        String lastId = customerDAO.getLastId();
+        Optional<String> optionalLastId = customerDAO.getLastId();
         char tableChar = 'C';
-        if (lastId != null) {
+
+        if (optionalLastId.isPresent()) {
+            String lastId = optionalLastId.get();
             String lastIdNumberString = lastId.substring(1);
             int lastIdNumber = Integer.parseInt(lastIdNumberString);
             int nextIdNumber = lastIdNumber + 1;
-            return String.format(tableChar + "%03d", nextIdNumber);
+            return String.format("%c%03d", tableChar, nextIdNumber);
         }
+
         return tableChar + "001";
     }
+
 }
